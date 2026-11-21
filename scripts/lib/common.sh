@@ -19,8 +19,8 @@ require_env() {
 
 load_env() {
   [[ -f "$ENV_FILE" ]] || die "No se encontro $ENV_FILE. Copia .env.example a .env"
-  # shellcheck source=/dev/null
   set -a
+  # shellcheck source=/dev/null
   source "$ENV_FILE"
   set +a
 }
