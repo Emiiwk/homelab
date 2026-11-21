@@ -20,7 +20,9 @@ services:
     container_name: homelab-images
     restart: unless-stopped
     environment:
-      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash) ${LAN_SUBNET:-192.168.1.0/24}(rw,sync,no_subtree_check,no_root_squash)
+      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash,fsid=0) ${LAN_SUBNET:-192.168.0.0/24}(rw,sync,no_subtree_check,no_root_squash,fsid=0)
+      # NFSv4 evita rpc.statd, que fallaba en este host con poca RAM.
+      NFS_DISABLE_VERSION_3: "1"
     cap_add: [SYS_ADMIN, NET_ADMIN]
     privileged: true  # necesario para montar rpc_pipefs y arrancar nfsd
     volumes:

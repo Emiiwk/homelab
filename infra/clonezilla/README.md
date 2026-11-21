@@ -7,7 +7,9 @@ Ver la documentacion completa en [`../../docs/05-clonezilla.md`](../../docs/05-c
 ```bash
 cd ../..
 docker compose --env-file .env -f infra/clonezilla/docker-compose.yml up -d
-showmount -e 10.10.0.30
+sudo mkdir -p /mnt/nfs-test
+sudo mount -t nfs -o vers=4,addr=10.10.0.30 10.10.0.30:/ /mnt/nfs-test
+ls /mnt/nfs-test
 ```
 
 ## Scripts

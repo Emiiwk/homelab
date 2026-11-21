@@ -37,7 +37,7 @@
   <text x="250" y="444" fill="#93c5fd" font-size="11" text-anchor="middle">DNS: 10.10.0.10</text>
 
   <rect x="490" y="370" width="320" height="90" rx="10" fill="#3f6212" stroke="#a3e635"/>
-  <text x="650" y="402" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">LAN FÍSICA · 192.168.1.0/24</text>
+  <text x="650" y="402" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">LAN FÍSICA · 192.168.0.0/24</text>
   <text x="650" y="424" fill="#d9f99d" font-size="11" text-anchor="middle">equipos a imagenar</text>
   <text x="650" y="444" fill="#bef264" font-size="11" text-anchor="middle">Clonezilla Live via USB</text>
 

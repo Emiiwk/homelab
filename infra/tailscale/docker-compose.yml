@@ -16,7 +16,7 @@ services:
     environment:
       TS_AUTHKEY: ${TS_AUTHKEY:?Configura TS_AUTHKEY en .env}
       TS_HOSTNAME: ${TS_HOSTNAME:-homelab}
-      TS_ROUTES: ${TS_ROUTES:-10.10.0.0/16,192.168.1.0/24}
+      TS_ROUTES: ${TS_ROUTES:-10.10.0.0/16,192.168.0.0/24}
       TS_EXTRA_ARGS: --accept-dns=true
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"

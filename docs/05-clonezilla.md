@@ -10,8 +10,9 @@ maquinas del laboratorio. El arranque se hace con una ISO/USB de Clonezilla
 |---|---|
 | Servidor NFS | `10.10.0.30` |
 | Exportacion | `/srv/clonezilla/images` |
-| Cliente | `10.10.0.0/16`, `192.168.1.0/24` |
-| Imagenes | `win10-base`, `ubuntu-lab`, `debian-server` |
+| Cliente | `10.10.0.0/16`, `192.168.0.0/24` |
+| Protocolo | NFSv4.2 (`NFS_DISABLE_VERSION_3=1`, `fsid=0`) |
+| Imagen real | `labo-disk-01` (savedisk verificado) |
 
 ## 1. Levantar el repositorio
 
@@ -20,13 +21,18 @@ docker compose --env-file .env -f infra/clonezilla/docker-compose.yml up -d
 docker compose --env-file .env -f infra/clonezilla/docker-compose.yml logs -f images
 ```
 
-Comprobar exportaciones desde el anfitrion:
+Comprobar el montaje NFSv4 desde el anfitrion:
 
 ```bash
-showmount -e 10.10.0.30
-# Export list for 10.10.0.30:
-# /srv/clonezilla/images 10.10.0.0/16 192.168.1.0/24
+sudo mkdir -p /mnt/nfs-test
+sudo mount -t nfs -o vers=4,addr=10.10.0.30 10.10.0.30:/ /mnt/nfs-test
+ls /mnt/nfs-test
+# disco-labo.raw  labo-disk-01
+sudo umount /mnt/nfs-test
 ```
+
+NFSv3 esta desactivado porque `rpc.statd` fallaba en este host con poca RAM.
+Clonezilla debe montar con `nfsvers=4` (opcion `device-image` > `nfs_server`).
 
 ## 2. Preparar un USB de Clonezilla Live
 
@@ -83,6 +89,21 @@ Ejemplo de `metadata.json`:
 }
 ```
 
+### Imagen real generada en el laboratorio
+
+El repositorio contiene `labo-disk-01`, una imagen real `savedisk` de un disco
+loopback de 64 MiB con una partición ext4. Se capturó con `ocs-sr` (Clonezilla
+5.9.9) sobre el volumen NFS `homelab-images`, y el propio Clonezilla la marcó
+como restaurable tras verificarla al 100%.
+
+```text
+[2026-11-21 20:11:45] [OK] Checksum guardado: 35a11f5d742c317e5c82a9e94318a01cda6cb398d5ca87ed6f133462fb750360
+[2026-11-21 20:11:45] [OK] Imagen 'labo-disk-01' creada correctamente (1,2M)
+```
+
+Evidencia: `docs/screenshots/06-clonezilla-savedisk.png` y
+`docs/screenshots/07-clonezilla-catalogo.png`.
+
 ## 4. Restaurar una imagen
 
 ```bash
@@ -106,15 +127,13 @@ Escribe YES para continuar:
 ```bash
 ./infra/clonezilla/scripts/list-images.sh
 # IMAGEN            FECHA        TAMANO   ESTADO
-# win10-base         2026-11-21   40G      OK
-# ubuntu-lab         2026-11-20   18G      OK
-# debian-server      2026-11-18   12G      OK
+# labo-disk-01       2026-11-21   1,2M     OK (verificado)
 ```
 
 Verificacion de integridad:
 
 ```bash
-sha256sum -c infra/clonezilla/images/win10-base/sha256sums.txt
+sha256sum -c infra/clonezilla/images/labo-disk-01/sha256sums.txt
 ```
 
 ## 6. Que demuestra

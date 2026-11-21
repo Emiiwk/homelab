@@ -73,13 +73,14 @@ docker compose --env-file .env -f infra/glpi/docker-compose.yml up -d
 ## 6. NFS: permission denied
 
 ```bash
-showmount -e 10.10.0.30
-exportfs -v
-rpcinfo -p 10.10.0.30
+docker logs homelab-images
+sudo mount -t nfs -o vers=4,addr=10.10.0.30 10.10.0.30:/ /mnt/nfs-test
+docker exec homelab-images exportfs -v
 ```
 
-En `nfs.conf`, la exportacion debe incluir la IP del cliente con
-`rw,sync,no_root_squash` (o mapear correctamente con `anonuid`).
+El repositorio sirve **solo NFSv4** (`fsid=0`); `showmount` no lista exportes.
+Si el contenedor entra en `Restarting`, revisa el log: `rpc.statd` se desactivo
+con `NFS_DISABLE_VERSION_3=1` por falta de RAM en el host.
 
 ## 7. Clonezilla no ve espacio
 

@@ -15,7 +15,6 @@ volumes:
   images-data:
   prometheus-data:
   grafana-data:
-  tailscale-data:
 
 services:
   # ------------------------------------------------------------------
@@ -147,7 +146,9 @@ services:
     container_name: homelab-images
     restart: unless-stopped
     environment:
-      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash) ${LAN_SUBNET:-192.168.1.0/24}(rw,sync,no_subtree_check,no_root_squash)
+      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash,fsid=0) ${LAN_SUBNET:-192.168.0.0/24}(rw,sync,no_subtree_check,no_root_squash,fsid=0)
+      # NFSv4 no necesita rpc.statd; en este host con poca RAM fallaba al arrancar.
+      NFS_DISABLE_VERSION_3: "1"
     cap_add:
       - SYS_ADMIN
       - NET_ADMIN
@@ -163,31 +164,8 @@ services:
       - "127.0.0.1:111:111/udp"
     logging: *default_logging
 
-  # ------------------------------------------------------------------
-  # Tailscale subnet router (nodo "homelab")
-  # ------------------------------------------------------------------
-  tailscale:
-    image: tailscale/tailscale:latest
-    container_name: homelab-tailscale
-    restart: unless-stopped
-    network_mode: host
-    hostname: ${TS_HOSTNAME:-homelab}
-    environment:
-      TS_AUTHKEY: ${TS_AUTHKEY:?Configura TS_AUTHKEY en .env}
-      TS_HOSTNAME: ${TS_HOSTNAME:-homelab}
-      TS_ROUTES: ${TS_ROUTES:-10.10.0.0/16,192.168.1.0/24}
-      TS_EXTRA_ARGS: --accept-dns=true
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: "false"
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      - tailscale-data:/var/lib/tailscale
-      - /dev:/dev
-    logging: *default_logging
+  # Tailscale se ejecuta en el anfitrion (tailscaled.service), no aqui.
+  # Ver docs/02-red-y-tailscale.md.
 
   # ------------------------------------------------------------------
   # Observability

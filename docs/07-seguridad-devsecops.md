@@ -5,7 +5,7 @@
 1. **Secretos fuera del codigo.** Solo `.env.example` con marcadores.
 2. **Menor privilegio.** Grupos AD y ACLs de Tailscale limitados por rol.
 3. **Superficie minima.** MariaDB y Redis sin puertos publicados.
-4. **Cifrado en transporte.** WireGuard (Tailscale) y LDAPS.
+4. **Cifrado en transporte.** WireGuard (Tailscale); LDAP simple confinado a la red Docker.
 5. **Cifrado en reposo.** Backups con restic (AES-256).
 6. **Trazabilidad.** Logs centralizados y cada cambio versionado en Git.
 
@@ -27,6 +27,12 @@ Buscar secretos accidentalmente añadidos:
 git log -p | grep -iE 'tskey-|password *= *[^C]'
 gitleaks detect --source . -v
 ```
+
+Rotacion realizada el 2026-11-21: la contraseña SSH/Sudo que aparecio en la
+conversacion se cambio por una aleatoria de 24 caracteres. La nueva esta fuera
+del repositorio, en `~/.homelab_ssh_password` (modo `0600`) de `emi-desk`.
+El acceso al homelab sigue siendo por clave SSH; la contraseña solo se usa para
+`sudo` en el propio homelab.
 
 ## 2. Hardening de contenedores
 
@@ -60,7 +66,7 @@ Redes:
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow 41641/udp comment 'Tailscale'
-sudo ufw allow from 192.168.1.0/24 to any port 2049 comment 'NFS LAN'
+sudo ufw allow from 192.168.0.0/24 to any port 2049 comment 'NFS LAN'
 sudo ufw enable
 sudo ufw status verbose
 ```

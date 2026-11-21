@@ -42,12 +42,28 @@ En GLPI: **Configuracion > Dominios > LDAP**:
 |---|---|
 | Host | `10.10.0.10` |
 | Base DN | `DC=homelab,DC=local` |
-| DN de conexion | `CN=administrador,CN=Users,DC=homelab,DC=local` |
+| DN de conexion | `CN=Administrator,CN=Users,DC=homelab,DC=local` |
 | Password | `AD_ADMIN_PASSWORD` |
 | Filtro usuarios | `(&(objectClass=user)(!(objectClass=computer)))` |
-| Atributo login | `sAMAccountName` |
+| Atributo login | `samaccountname` (en minusculas: PHP LDAP devuelve los nombres de atributo en minusculas) |
 
 Pulsar **Probar conexion**. Debe devolver los 8 usuarios del dominio.
+
+Toda esta configuracion queda versionada en
+[`../infra/glpi/scripts/configure-ldap.sh`](../infra/glpi/scripts/configure-ldap.sh)
+y se aplica con:
+
+```bash
+./infra/glpi/scripts/configure-ldap.sh
+```
+
+Notas del laboratorio:
+
+- El DC permite bind LDAP simple (`ldap server require strong auth = no`) para
+  evitar LDAPS en un entorno sin CA interna.
+- La importacion se hace en **Administracion > Usuarios > Enlace a directorio
+  LDAP > Importar nuevos usuarios**. Los usuarios importados quedan con
+  `authtype = 3` (LDAP) y `auths_id = 1`.
 
 ## 3. Cargar tickets de prueba
 

@@ -29,7 +29,7 @@ Un unico equipo fisico (o VM) capaz de ejecutar, de forma simultanea y aislada:
 
 | Segmento | Rango | Uso |
 |---|---|---|
-| LAN fisica | `192.168.1.0/24` | Equipos del laboratorio, acceso desde casa |
+| LAN fisica | `192.168.0.0/24` | Equipos del laboratorio, acceso desde casa |
 | Docker `homelab_net` | `10.10.0.0/16` | Red interna de contenedores |
 | Tailnet | `100.x.y.z/8` | Acceso remoto, nodo `homelab` |
 

@@ -15,7 +15,7 @@ check_container() {
   fi
 }
 
-for c in homelab-ad homelab-glpi homelab-glpi-db homelab-glpi-cache homelab-images homelab-tailscale homelab-prometheus homelab-grafana homelab-cadvisor homelab-node-exporter; do
+for c in homelab-ad homelab-glpi homelab-glpi-db homelab-glpi-cache homelab-images homelab-prometheus homelab-grafana homelab-cadvisor homelab-node-exporter; do
   check_container "$c"
 done
 
@@ -38,11 +38,12 @@ else
   failures=$((failures + 1))
 fi
 
-info "Comprobando Tailscale ..."
-if docker exec homelab-tailscale tailscale status --peers=false 2>/dev/null | grep -qi 'healthy\|100\.'; then
-  ok "Tailscale conectado"
+info "Comprobando Tailscale (servicio en el anfitrion) ..."
+if systemctl is-active --quiet tailscaled && tailscale status --self 2>/dev/null | grep -q '^100\.'; then
+  ok "Tailscale conectado en el anfitrion"
 else
-  warn "Tailscale no parece conectado"
+  warn "Tailscale no parece conectado en el anfitrion"
+  failures=$((failures + 1))
 fi
 
 echo
