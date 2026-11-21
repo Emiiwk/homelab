@@ -41,11 +41,15 @@ api_post() {
        -d "$2" "$1"
 }
 
-# Busca el id de un item por nombre (usuarios, categorias, etc.)
+# Busca el id de un item por nombre sobre el listado completo.
+# GLPI ignora "search-text" en algunas versiones, asi que se filtra en local.
 find_id() {
   local endpoint="$1" name="$2"
-  api_get "$GLPI_URL/apirest.php/$endpoint?search-text=$(printf '%s' "$name" | jq -sRr @uri)&range=0-1" \
-    | jq -r 'if type == "array" then .[0].id // empty else .data[0].id // empty end'
+  api_get "$GLPI_URL/apirest.php/$endpoint?range=0-1000" \
+    | jq -r --arg n "$name" '
+        (if type == "array" then . else .data end)
+        | map(select(((.name // .completename // "") | ascii_downcase) == ($n | ascii_downcase)))
+        | .[0].id // empty'
 }
 
 declare -A URGENCIA=( [1]=5 [2]=4 [3]=3 [4]=2 [5]=1 )
@@ -55,14 +59,18 @@ created=0
 existing=0
 failed=0
 
+# Indice de titulos ya presentes (clave natural para idempotencia)
+declare -A TICKET_NAMES
+while IFS= read -r name; do
+  [[ -n "$name" ]] && TICKET_NAMES["$name"]=1
+done < <(api_get "$GLPI_URL/apirest.php/Ticket?range=0-1000" \
+         | jq -r '(if type == "array" then . else .data end)[].name // empty')
+
 while IFS=',' read -r id titulo categoria prioridad estado tecnico origen sla descripcion seguimiento; do
   [[ -z "${id:-}" || "$id" == id || "$id" == \#* ]] && continue
 
-  # Comprobar existencia por titulo (clave natural)
-  found="$(api_get "$GLPI_URL/apirest.php/Ticket?search-text=$(printf '%s' "$titulo" | jq -sRr @uri)&range=0-1" \
-           | jq -r 'if type == "array" then .[0].id // empty else .data[0].id // empty end')"
-  if [[ -n "$found" ]]; then
-    warn "$id ya existe (ticket #$found)"
+  if [[ -n "${TICKET_NAMES[$titulo]:-}" ]]; then
+    warn "$id ya existe: $titulo"
     existing=$((existing + 1))
     continue
   fi
