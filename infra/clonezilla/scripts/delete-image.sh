@@ -10,5 +10,5 @@ echo "Vas a BORRAR la imagen '$name' ($(human_size "$IMAGE_ROOT/$name"))"
 read -r -p 'Escribe DELETE para confirmar: ' confirm
 [[ "$confirm" == "DELETE" ]] || die "Operacion cancelada"
 
-rm -rf -- "$IMAGE_ROOT/$name"
+rm -rf -- "${IMAGE_ROOT:?}/${name}"
 ok "Imagen '$name' eliminada"

@@ -35,7 +35,8 @@ while IFS= read -r script; do
 done < <(find "$ROOT_DIR" -type f -name '*.sh' -not -path '*/backups/*')
 
 if command -v shellcheck >/dev/null; then
-  shellcheck -x $(find "$ROOT_DIR" -type f -name '*.sh') || report_fail "shellcheck"
+  mapfile -t sh_files < <(find "$ROOT_DIR" -type f -name '*.sh')
+  shellcheck -x "${sh_files[@]}" || report_fail "shellcheck"
 fi
 
 info "3/5 Buscando secretos ..."

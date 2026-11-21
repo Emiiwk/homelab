@@ -13,9 +13,9 @@ for dir in "$IMAGE_ROOT"/*/; do
     fecha="$(jq -r '.created // "desconocida"' "$dir/metadata.json" | cut -c1-10)"
     checksum="$(jq -r '.sha256 // empty' "$dir/metadata.json")"
     estado="OK"
+    [[ -n "$checksum" ]] && estado="OK (verificado)"
   else
     fecha="sin metadata"
-    checksum=""
     estado="SIN VERIFICAR"
   fi
   tamano="$(human_size "$dir")"

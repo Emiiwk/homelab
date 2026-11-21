@@ -25,7 +25,7 @@ group_exists() {
 }
 
 create_ou() {
-  local dn="$1" name="$2" parent="$3"
+  local dn="$1" name="$2"
   if samba-tool ou list 2>/dev/null | grep -qi "^${name}$"; then
     warn "OU ya existe: $name"
   else
@@ -67,15 +67,15 @@ fi
 # 2. Estructura de OUs
 # ------------------------------------------------------------------
 log INFO "Creando estructura de OUs ..."
-create_ou "OU=Homelab,$BASE_DN"        "Homelab"        "$BASE_DN"
-create_ou "OU=Usuarios,OU=Homelab,$BASE_DN"   "Usuarios"  "$BASE_DN"
-create_ou "OU=TI,OU=Usuarios,OU=Homelab,$BASE_DN" "TI" "$BASE_DN"
-create_ou "OU=Operaciones,OU=Usuarios,OU=Homelab,$BASE_DN" "Operaciones" "$BASE_DN"
-create_ou "OU=Invitados,OU=Usuarios,OU=Homelab,$BASE_DN" "Invitados" "$BASE_DN"
-create_ou "OU=Equipos,OU=Homelab,$BASE_DN" "Equipos" "$BASE_DN"
-create_ou "OU=Servidores,OU=Equipos,OU=Homelab,$BASE_DN" "Servidores" "$BASE_DN"
-create_ou "OU=Clientes,OU=Equipos,OU=Homelab,$BASE_DN" "Clientes" "$BASE_DN"
-create_ou "OU=Grupos,OU=Homelab,$BASE_DN" "Grupos" "$BASE_DN"
+create_ou "OU=Homelab,$BASE_DN"        "Homelab"
+create_ou "OU=Usuarios,OU=Homelab,$BASE_DN"   "Usuarios"
+create_ou "OU=TI,OU=Usuarios,OU=Homelab,$BASE_DN" "TI"
+create_ou "OU=Operaciones,OU=Usuarios,OU=Homelab,$BASE_DN" "Operaciones"
+create_ou "OU=Invitados,OU=Usuarios,OU=Homelab,$BASE_DN" "Invitados"
+create_ou "OU=Equipos,OU=Homelab,$BASE_DN" "Equipos"
+create_ou "OU=Servidores,OU=Equipos,OU=Homelab,$BASE_DN" "Servidores"
+create_ou "OU=Clientes,OU=Equipos,OU=Homelab,$BASE_DN" "Clientes"
+create_ou "OU=Grupos,OU=Homelab,$BASE_DN" "Grupos"
 
 # ------------------------------------------------------------------
 # 3. Grupos

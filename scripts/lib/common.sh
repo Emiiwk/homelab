@@ -19,8 +19,10 @@ require_env() {
 
 load_env() {
   [[ -f "$ENV_FILE" ]] || die "No se encontro $ENV_FILE. Copia .env.example a .env"
-  # shellcheck disable=SC1090
-  set -a; source "$ENV_FILE"; set +a
+  # shellcheck source=/dev/null
+  set -a
+  source "$ENV_FILE"
+  set +a
 }
 
 compose() {
