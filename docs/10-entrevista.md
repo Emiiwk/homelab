@@ -98,7 +98,7 @@ Resultado: Los 8 usuarios del dominio aparecen en GLPI y el enlace LDAP esta
 
 ## Enlaces para la web profesional
 
-- Portada del proyecto: `https://github.com/emiwk2006/homelab`
-- Documentacion: `https://emiwk2006.github.io/homelab/`
+- Portada del proyecto: `https://github.com/Emiiwk/homelab`
+- Documentacion: `https://Emiiwk.github.io/homelab/`
 - Temas a destacar en la web: `Linux`, `Docker`, `Active Directory`, `GLPI`,
   `Tailscale`, `Bash`, `Ansible`, `DevSecOps`.

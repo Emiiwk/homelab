@@ -5,7 +5,7 @@ set -Eeuo pipefail
 source "$(dirname "$0")/lib/common.sh"
 
 REPO_NAME="${REPO_NAME:-homelab}"
-REPO_OWNER="${REPO_OWNER:-emiwk2006}"
+REPO_OWNER="${REPO_OWNER:-Emiiwk}"
 VISIBILITY="${VISIBILITY:-public}"
 
 info "1/5 Validando contenido ..."
