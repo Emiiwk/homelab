@@ -5,6 +5,8 @@ set -Eeuo pipefail
 
 GLPI_URL="${GLPI_URL:-http://127.0.0.1:8080}"
 GLPI_API_TOKEN="${GLPI_API_TOKEN:?Configura GLPI_API_TOKEN en .env}"
+GLPI_USER="${GLPI_USER:-glpi}"
+GLPI_PASSWORD="${GLPI_PASSWORD:-glpi}"
 CSV="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/data/tickets.csv}"
 
 log()  { printf '[%s] [%s] %s\n' "$(date '+%F %T')" "$1" "$2"; }
@@ -15,25 +17,26 @@ die()  { log ERROR "$1"; exit 1; }
 command -v jq >/dev/null || die "Necesitas jq"
 [[ -f "$CSV" ]] || die "No se encontro $CSV"
 
-SESSION="$(curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
+SESSION="$(curl -fsS -H "App-Token: $GLPI_API_TOKEN" \
+  -d "login=$GLPI_USER&password=$GLPI_PASSWORD" \
   "$GLPI_URL/apirest.php/initSession" | jq -r '.session_token // empty')"
 [[ -n "$SESSION" ]] || die "No se pudo iniciar sesion en la API de GLPI"
 ok "Sesion API iniciada"
 
 cleanup() {
-  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
+  curl -fsS -H "App-Token: $GLPI_API_TOKEN" \
        -H "Session-Token: $SESSION" \
        "$GLPI_URL/apirest.php/killSession" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 api_get() {
-  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
+  curl -fsS -H "App-Token: $GLPI_API_TOKEN" \
        -H "Session-Token: $SESSION" "$1"
 }
 
 api_post() {
-  curl -fsS -X POST -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
+  curl -fsS -X POST -H "App-Token: $GLPI_API_TOKEN" \
        -H "Session-Token: $SESSION" -H 'Content-Type: application/json' \
        -d "$2" "$1"
 }
