@@ -42,14 +42,15 @@ En GLPI: **Configuracion > Dominios > LDAP**:
 |---|---|
 | Host | `10.10.0.10` |
 | Base DN | `DC=homelab,DC=local` |
-| DN de conexion | `CN=Administrator,CN=Users,DC=homelab,DC=local` |
+| DN de conexión | `CN=Administrator,CN=Users,DC=homelab,DC=local` |
 | Password | `AD_ADMIN_PASSWORD` |
 | Filtro usuarios | `(&(objectClass=user)(!(objectClass=computer)))` |
 | Atributo login | `samaccountname` (en minusculas: PHP LDAP devuelve los nombres de atributo en minusculas) |
 
-Pulsar **Probar conexion**. Debe devolver los 8 usuarios del dominio.
+Pulsar **Probar conexión**. Devuelve 11 cuentas: las 8 del CSV más las
+internas `administrator`, `guest` y `krbtgt`.
 
-Toda esta configuracion queda versionada en
+Toda esta configuración queda versionada en
 [`../infra/glpi/scripts/configure-ldap.sh`](../infra/glpi/scripts/configure-ldap.sh)
 y se aplica con:
 
@@ -76,7 +77,8 @@ incidencias realistas** con:
 - Estado (Nuevo, Asignado, En curso, Resuelto, Cerrado)
 - Tecnico asignado
 - Origen (Correo, Telefono, Portal, Presencial)
-- SLA objetivo
+- Objetivo de SLA **como texto dentro de `content`**: GLPI 10 no expone un
+  campo `sla_horas` por API; no es un SLA calculable.
 
 Ejemplo:
 
@@ -95,11 +97,15 @@ Cargarlos con:
 # Via API REST (recomendado)
 ./infra/glpi/scripts/seed-tickets.sh
 
-# Comprobar que se crearon
-curl -s -H "Authorization: Bearer $GLPI_API_TOKEN" \
-  "$GLPI_URL/apirest.php/Ticket" | jq '.data | length'
+# Comprobar el total real por API (el wrapper hace initSession por nosotros)
+GLPI_URL=http://127.0.0.1:8080 ./infra/glpi/scripts/glpi-api.sh stats \
+  | jq '[.[].total] | add'
 # > 12
 ```
+
+La captura `04-glpi-tickets.png` muestra solo **8 filas** porque el filtro de
+la vista está limitado; el total de 12 se verifica con la API, no con esa
+imagen.
 
 El script es idempotente: consulta los tickets existentes y solo crea los que
 faltan, usando `titulo` como clave natural.
@@ -115,23 +121,28 @@ Nuevo -> Asignado -> En curso -> Resuelto -> Cerrado
 Cada ticket incluye **comentarios de seguimiento** para que el historial parezca
 real: diagnostico, cambio aplicado y verificacion con el usuario.
 
-## 5. API util
+## 5. API útil
 
 ```bash
-# Obtener session token
-curl -s -H "Authorization: Bearer $GLPI_API_TOKEN" \
-  "$GLPI_URL/apirest.php/initSession" | jq -r .session_token
+GLPI_URL=http://127.0.0.1:8080
+API="App-Token: $GLPI_API_TOKEN"
 
-# Listar tickets abiertos
-curl -s -H "Authorization: Bearer $GLPI_API_TOKEN" \
-  -H "Session-Token: $SESSION" \
-  "$GLPI_URL/apirest.php/Ticket?range=0-50&sort=date;DESC" | jq '.data[] | {id, name, status}'
+# initSession necesita App-Token + login/password (solo App-Token da sesión nula)
+SESSION=$(curl -fsS -H "$API" -d "login=$GLPI_USER&password=$GLPI_PASSWORD" \
+  "$GLPI_URL/apirest.php/initSession" | jq -r '.session_token')
 
-# Crear un ticket
-curl -s -X POST -H "Authorization: Bearer $GLPI_API_TOKEN" \
-  -H "Session-Token: $SESSION" -H 'Content-Type: application/json' \
+# Según la versión, la respuesta viene como array o dentro de .data
+curl -fsS -H "$API" -H "Session-Token: $SESSION" \
+  "$GLPI_URL/apirest.php/Ticket?range=0-50" \
+  | jq -r '(if type == "array" then . else .data end)[] | {id, name, status}'
+
+curl -fsS -X POST -H "$API" -H "Session-Token: $SESSION" \
+  -H 'Content-Type: application/json' \
   -d '{"input":{"name":"Fallo de prueba","content":"Creado desde API","urgency":3}}' \
   "$GLPI_URL/apirest.php/Ticket"
+
+curl -fsS -H "$API" -H "Session-Token: $SESSION" \
+  "$GLPI_URL/apirest.php/killSession" >/dev/null
 ```
 
 El wrapper [`scripts/glpi-api.sh`](../infra/glpi/scripts/glpi-api.sh) hace todo esto
@@ -139,7 +150,7 @@ sin escribir curl a mano.
 
 ## 6. Que demuestra
 
-- Instalacion y administracion de un sistema ITSM real.
+- Instalacion y administración de un sistema ITSM real.
 - **Modelado de incidencias**: prioridad, urgencia, impacto, SLA.
 - Uso de **API REST** con tokens y sesiones.
 - Integracion **LDAP con Active Directory**.
@@ -149,7 +160,7 @@ sin escribir curl a mano.
 
 | Sintoma | Causa | Solucion |
 |---|---|---|
-| Pantalla de instalacion no desaparece | Falta borrar `install/install.php` | `docker exec glpi rm -f /var/www/glpi/install/install.php` |
+| Pantalla de instalación no desaparece | Falta borrar `install/install.php` | `docker exec glpi rm -f /var/www/glpi/install/install.php` |
 | `Access denied for user 'glpi'` | Password distinto en `.env` y BD | Recrear volumen o `ALTER USER` en MariaDB |
 | API devuelve `ERROR_SESSION_TOKEN` | Token caducado | Llamar de nuevo a `initSession` |
 | No conecta con LDAP | DNS o firewall | `docker exec glpi getent hosts 10.10.0.10` |

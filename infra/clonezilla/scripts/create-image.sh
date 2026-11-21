@@ -16,18 +16,17 @@ dest="$IMAGE_ROOT/$name"
 
 df -h "$IMAGE_ROOT" | tail -1 | awk '{print "Espacio libre: "$4}'
 
+# No se escribe metadata/checksum si no hubo una captura real.
+command -v clonezilla >/dev/null 2>&1 \
+  || die "Clonezilla no disponible; arranca Clonezilla Live o instala el paquete clonezilla"
+
 log INFO "Capturando $disk -> $name ..."
 mkdir -p "$dest"
 
 # Clonezilla savedisk en modo no interactivo.
-# -q2: modo principiante; -z1p: zstd paralelo; -p true: poweroff al terminar.
-if command -v clonezilla >/dev/null 2>&1; then
-  clonezilla -s -q2 -j2 -z1p -p false savedisk "$name" "$disk" \
-    -scs "$dest" || die "Clonezilla devolvio error"
-else
-  warn "Clonezilla no esta en este equipo; se crea la estructura y se espera captura desde USB."
-  warn "Arranca Clonezilla Live, elige device-image > nfs_server > 10.10.0.30 > /srv/clonezilla/images > savedisk > $name"
-fi
+# -q2: modo principiante; -z1p: zstd paralelo; -p false: no apagar al terminar.
+clonezilla -s -q2 -j2 -z1p -p false savedisk "$name" "$disk" \
+  -scs "$dest" || die "Clonezilla devolvio error"
 
 size="$(du -sb "$dest" | cut -f1)"
 write_metadata "$name" "$disk" "$size" "$notes"

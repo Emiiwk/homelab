@@ -1,7 +1,7 @@
 # 10-tailscale-ping.png
 
-- Fecha: 2026-11-21 20:41
+- Fecha: 2026-11-21T21:10:30+01:00
 - Servicio: Tailscale (emi-desk -> homelab)
-- Comando: `tailscale ping homelab`
-- Qué demuestra: conectividad directa desde otro nodo al subnet router
+- Comando: `date -Iseconds; tailscale ping homelab`
+- Qué hice: hice ping desde `emi-desk` hasta el subnet router
 - Resultado: correcto

@@ -100,7 +100,7 @@ El modelo es:
 | Grupo | Acceso |
 |---|---|
 | `group:admins` | Todo (`*:*`) |
-| `group:soporte` | GLPI, Grafana, AD (LDAP/DNS) e imagenes (NFS) |
+| `group:soporte` | GLPI, Grafana, AD (LDAP/DNS) e imágenes (NFS) |
 | `group:usuarios` | Solo GLPI |
 | `tag:homelab` | Salida a Internet via nodo, sin acceso a la LAN fisica |
 

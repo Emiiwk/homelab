@@ -12,43 +12,48 @@ tail -n 50 <(docker compose --env-file .env -f infra/docker-compose.yml logs)
 ## Tareas semanales
 
 - Revisar tickets abiertos en GLPI y cerrar los resueltos.
-- `restic snapshots` y `restic check`.
 - `samba-tool dbcheck --cross-ncs` en el DC.
 - Comprobar espacio: `df -h`, `docker system df`.
 - Rotar o caducar claves Tailscale temporales.
+- **Pendiente:** configurar restic para poder ejecutar `restic snapshots` y
+  `restic check` (hoy no hay repositorio ni `RESTIC_PASSWORD_FILE`).
 
 ## Tareas mensuales
 
 - Restaurar **una imagen de prueba** en una VM desechable y medir el RTO.
 - Restaurar **un backup de GLPI** en otro nombre de BD y verificar tickets.
-- Actualizar imagenes base (`docker compose pull`, `make up`).
+- Actualizar imágenes base (`docker compose pull`, `make up`).
 - Revisar `SECURITY.md` y rotar secretos.
 
-## Backup: que se guarda
+## Backup: diseño vs realidad
 
-| Dato | Metodo | Destino |
+`scripts/backup.sh` ya hace el volcado de MariaDB y llama a restic, pero
+**hoy no está operativo**: `restic` no está instalado en el homelab y no existe
+`backups/restic` ni `~/.restic-pass`. No hay snapshots reales.
+
+| Dato | Método previsto | Estado |
 |---|---|---|
-| Volumenes Docker | `restic backup` sobre `/var/lib/docker/volumes` | `backups/restic` |
-| BD de GLPI | `mariadb-dump` -> restic | `backups/restic` |
-| Configuracion AD | `samba-tool domain backup online` | `backups/restic` |
-| Imagenes Clonezilla | `rsync` incremental | Disco externo / B2 |
-| Repositorio git | `git clone --mirror` | GitHub + disco externo |
+| BD de GLPI | `mariadb-dump` -> restic | Script listo, sin ejecutar |
+| Configuración AD | `samba-tool domain backup online` | Probado manualmente, sin automatizar |
+| `infra/`, `docs/` y `.env` | `restic backup` | Sin repositorio configurado |
+| Imágenes Clonezilla | `rsync` a disco externo | No implementado |
+| Repositorio git | `git clone --mirror` | GitHub sí; disco externo no |
 
-## Ejecutar un backup
+Para ponerlo en marcha:
 
 ```bash
+# En emi-desk o en el homelab, según donde guardes el repo cifrado
+openssl rand -base64 32 > ~/.restic-pass && chmod 600 ~/.restic-pass
+export RESTIC_REPOSITORY=/ruta/backups/restic
 ./scripts/backup.sh
-# [INFO] Parando GLPI para backup consistente ...
-# [INFO] Volcando MariaDB ...
-# [INFO] Backing up 3.4 GiB ...
-# [OK] Snapshot 8f3a1c2b guardado
-# [OK] restic check: no errors
 ```
+
+No pego una salida de `restic snapshots` porque todavía no existe.
 
 ## Restaurar GLPI
 
 ```bash
-# 1. Parar aplicacion
+# 1. Parar aplicación
 docker compose --env-file .env -f infra/glpi/docker-compose.yml stop glpi
 
 # 2. Restaurar dump
@@ -69,11 +74,11 @@ docker exec homelab-ad samba-tool domain backup online \
 # Copiar el .tar.bz2 fuera del contenedor con docker cp
 ```
 
-Para un DC unico, la restauracion completa implica recrear el contenedor y
+Para un DC único, la restauracion completa implica recrear el contenedor y
 restaurar `/var/lib/samba`. Documentar el procedimiento paso a paso es parte del
 aprendizaje.
 
-## Estrategia 3-2-1
+## Estrategia 3-2-1 (objetivo, no implementada)
 
 - **3** copias (produccion + local + remota).
 - **2** medios distintos (SSD local + B2/S3).

@@ -3,5 +3,5 @@
 - Fecha: 2026-11-21 18:42
 - Servicio: Samba AD DC (homelab-ad)
 - Comando: `docker exec homelab-ad wbinfo -u`
-- Qué demuestra: los usuarios del dominio resueltos por winbind
+- Qué hice: listé 11 cuentas resueltas por winbind (8 del CSV + `administrator`, `guest`, `krbtgt`)
 - Resultado: correcto

@@ -2,7 +2,7 @@
 
 ## Principios aplicados
 
-1. **Secretos fuera del codigo.** Solo `.env.example` con marcadores.
+1. **Secretos fuera del código.** Solo `.env.example` con marcadores.
 2. **Menor privilegio.** Grupos AD y ACLs de Tailscale limitados por rol.
 3. **Superficie minima.** MariaDB y Redis sin puertos publicados.
 4. **Cifrado en transporte.** WireGuard (Tailscale); LDAP simple confinado a la red Docker.
@@ -28,15 +28,19 @@ git log -p | grep -iE 'tskey-|password *= *[^C]'
 gitleaks detect --source . -v
 ```
 
-Rotacion realizada el 2026-11-21: la contraseña SSH/Sudo que aparecio en la
-conversacion se cambio por una aleatoria de 24 caracteres. La nueva esta fuera
-del repositorio, en `~/.homelab_ssh_password` (modo `0600`) de `emi-desk`.
-El acceso al homelab sigue siendo por clave SSH; la contraseña solo se usa para
-`sudo` en el propio homelab.
+**Estado real:** las contraseñas de los usuarios de laboratorio se rotaron el
+2026-11-21 y se entregan por variables `AD_PASS_*` en `.env`, fuera del repo.
+El acceso SSH al homelab es por clave.
 
-## 2. Hardening de contenedores
+## 2. Hardening de contenedores (pendiente)
 
-En `infra/docker-compose.yml`:
+Hoy **no hay** `read_only`, `cap_drop` ni `no-new-privileges` aplicados en
+`infra/docker-compose.yml`. Los contenedores `ad`, `images` y `cadvisor`
+siguen necesitando capacidades amplias (`SYS_ADMIN`, `NET_ADMIN`,
+`privileged: true`) y `node-exporter` usa `pid: host`.
+
+El objetivo es endurecer `glpi-db` y `glpi-cache` con este bloque, todavía no
+implementado:
 
 ```yaml
 services:
@@ -44,14 +48,9 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETUID
-      - SETGID
-    security_opt:
-      - no-new-privileges:true
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID]
+    security_opt: [no-new-privileges:true]
 ```
 
 Redes:
@@ -78,12 +77,12 @@ No se abre 80/443: todo el acceso remoto entra por Tailscale.
 Ver [`tailscale/config/acl.hujson`](../infra/tailscale/config/acl.hujson).
 Politica por defecto **deny**, con excepciones explicitas por grupo.
 
-## 5. Escaneo de imagenes en CI
+## 5. Escaneo de imágenes en CI
 
 Añadir al workflow de validacion:
 
 ```yaml
-- name: Escanear imagenes con Trivy
+- name: Escanear imágenes con Trivy
   run: |
     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
       aquasecurity/trivy:latest image glpi/glpi:10.0.x --exit-code 1 --severity HIGH,CRITICAL
@@ -124,4 +123,4 @@ con `restic -r s3:...` para cumplir **3-2-1**.
 - «¿Como gestionas secretos?» -> `.env`, rotacion, gitleaks.
 - «¿Como limitas el acceso?» -> ACLs de Tailscale + grupos AD + UFW.
 - «¿ Como sabes que no te has cargado algo?» -> backups cifrados + `restic check` + CI.
-- «¿Como evitas que vuelva a pasar?» -> documentacion y playbooks idempotentes.
+- «¿Como evitas que vuelva a pasar?» -> documentación y playbooks idempotentes.

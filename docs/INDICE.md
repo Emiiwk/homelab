@@ -1,8 +1,8 @@
-# Indice de documentacion
+# Indice de documentación
 
 | # | Documento | Contenido |
 |---|---|---|
-| 00 | [README](../README.md) | Vision general y arranque rapido |
+| 00 | [README](../README.md) | Vision general y arranque rápido |
 | 01 | [Arquitectura](01-arquitectura.md) | Diseno, red, decisiones y por que |
 | 02 | [Red y Tailscale](02-red-y-tailscale.md) | Tailnet, subnet router, DNS, ACLs |
 | 03 | [Active Directory](03-active-directory.md) | Dominio, OUs, usuarios, grupos, permisos |
@@ -10,10 +10,9 @@
 | 05 | [Clonezilla](05-clonezilla.md) | Repositorio NFS, captura y restauracion |
 | 06 | [Automatizacion](06-automatizacion.md) | Make, Bash, Ansible, GitHub Actions |
 | 07 | [Seguridad / DevSecOps](07-seguridad-devsecops.md) | Secretos, hardening, backups |
-| 08 | [Operaciones](08-operaciones-y-backups.md) | Dia a dia, backups, restauracion |
+| 08 | [Operaciones](08-operaciones-y-backups.md) | Día a día, backups, restauracion |
 | 09 | [Troubleshooting](09-troubleshooting.md) | Fallos reales y soluciones |
-| 10 | [Entrevista](10-entrevista.md) | Como defender este proyecto ante una empresa |
-| 11 | [Capturas](screenshots/README.md) | Checklist de evidencias |
+| 10 | [Capturas](screenshots/README.md) | Transcripción de comandos ejecutados |
 
 ## Diagramas
 

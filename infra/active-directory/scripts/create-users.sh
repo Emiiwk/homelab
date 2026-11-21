@@ -22,13 +22,28 @@ while IFS=',' read -r usuario nombre apellido password grupo ou; do
   [[ -z "${usuario:-}" || "$usuario" == usuario || "$usuario" == \#* ]] && continue
   usuario="$(echo "$usuario" | xargs)"
 
+  if [[ "$password" == "USE_ENV" ]]; then
+    env_key="AD_PASS_$(printf '%s' "$usuario" | tr '[:lower:]' '[:upper:]')"
+    password="${!env_key:-}"
+    if [[ -z "$password" ]]; then
+      if [[ "$usuario" == "administrador" ]]; then
+        password="$ADMIN_PASS"
+      else
+        die "Falta $env_key en .env para crear/actualizar $usuario"
+      fi
+    fi
+  fi
+
   if samba-tool user list 2>/dev/null | grep -qi "^${usuario}$"; then
     warn "Usuario ya existe: $usuario (actualizando pertenencia)"
     skipped=$((skipped + 1))
-  else
-    if [[ "$password" == "USE_ENV" ]]; then
-      password="$ADMIN_PASS"
+    # La password se rota fuera del repo; si cambia, se aplica aqui.
+    if [[ -n "${password:-}" ]]; then
+      samba-tool user setpassword "$usuario" --newpassword="$password" >/dev/null 2>&1 \
+        && ok "Password sincronizada: $usuario" \
+        || warn "No se pudo sincronizar la password de $usuario"
     fi
+  else
     samba-tool user create "$usuario" "$password" \
       --given-name="$nombre" --surname="$apellido" \
       --description="Usuario de laboratorio creado por create-users.sh" \

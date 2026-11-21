@@ -120,7 +120,7 @@ docker exec homelab-ad kinit administrador@HOMELAB.LOCAL
 docker exec homelab-ad klist
 ```
 
-LDAP con `ldapsearch` (instalar `ldap-utils` en el anfitrion):
+LDAP con `ldapsearch` (instalar `ldap-útils` en el anfitrion):
 
 ```bash
 ldapsearch -x -H ldap://10.10.0.10:389 \

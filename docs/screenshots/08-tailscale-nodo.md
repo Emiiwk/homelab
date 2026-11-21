@@ -1,7 +1,7 @@
 # 08-tailscale-nodo.png
 
-- Fecha: 2026-11-21 20:41
+- Fecha: 2026-11-21T21:10:30+01:00
 - Servicio: Tailscale (homelab)
-- Comando: `ssh -o BatchMode=yes emi@192.168.0.19 'tailscale status'`
-- Qué demuestra: el nodo homelab conectado con IP 100.90.98.75 dentro del tailnet
+- Comando: `ssh -o BatchMode=yes emi@192.168.0.19 'date -Iseconds; tailscale status'`
+- Qué hice: comprobé el nodo `homelab` conectado en el tailnet
 - Resultado: correcto

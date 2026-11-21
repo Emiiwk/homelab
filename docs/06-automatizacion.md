@@ -5,7 +5,7 @@ Tres capas, de mas simple a mas completa:
 ```text
 Make  -> atajos legibles para el dia a dia
 Bash  -> logica de aprovisionamiento y verificacion
-Ansible -> configuracion declarativa y repetible
+Ansible -> configuración declarativa y repetible
 CI    -> validacion automatica en GitHub
 ```
 
@@ -44,7 +44,7 @@ Convenciones:
 - `set -Eeuo pipefail` en todos.
 - Funciones `log INFO/WARN/ERROR` con fecha.
 - `wait_for host port timeout` antes de depender de un servicio.
-- Salidas con codigo de error claro.
+- Salidas con código de error claro.
 
 Ejemplo real de `wait_for`:
 
@@ -73,7 +73,7 @@ Playbooks:
 | `glpi.yml` | Despliega stack y semilla tickets |
 
 Todas las tareas son **idempotentes**: ejecutar dos veces no cambia nada. Eso se
-comprueba con `--check` y comparando el `changed=` de la segunda ejecucion:
+comprueba con `--check` y comparando el `changed=` de la segúnda ejecucion:
 
 ```bash
 ansible-playbook -i inventory.ini playbooks/site.yml --check
@@ -89,7 +89,7 @@ ansible-playbook -i inventory.ini playbooks/site.yml --check
 | Workflow | Archivo | Funcion |
 |---|---|---|
 | CI | `.github/workflows/validate.yml` | `shellcheck`, `yamllint`, markdown links, deteccion de secretos |
-| Docs | `.github/workflows/docs.yml` | Publica la documentacion en GitHub Pages |
+| Docs | `.github/workflows/docs.yml` | Publica la documentación en GitHub Pages |
 
 Cada push a `main` ejecuta la validacion. Un PR con un `tskey-` en el diff
 falla automaticamente.
@@ -111,4 +111,4 @@ falla automaticamente.
 - **IaC**: todo el entorno se reconstruye desde cero con comandos.
 - **Idempotencia**: repetible sin efectos secundarios.
 - **CI**: calidad y seguridad automatizadas, no solo «funciona en mi casa».
-- **Documentacion como codigo**: se valida en el pipeline.
+- **Documentacion como código**: se valida en el pipeline.

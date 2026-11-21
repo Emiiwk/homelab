@@ -2,11 +2,11 @@
 
 ## Objetivo
 
-Un unico equipo fisico (o VM) capaz de ejecutar, de forma simultanea y aislada:
+Un único equipo fisico (o VM) capaz de ejecutar, de forma simultanea y aislada:
 
 1. Un **controlador de dominio** con identidad centralizada.
 2. Un **servicio de helpdesk** con datos de prueba realistas.
-3. Un **repositorio de imagenes** para despliegue de equipos.
+3. Un **repositorio de imágenes** para despliegue de equipos.
 4. Una **red privada** accesible desde fuera de casa sin abrir puertos.
 5. **Observabilidad y backups** para operar con seguridad.
 
@@ -14,16 +14,16 @@ Un unico equipo fisico (o VM) capaz de ejecutar, de forma simultanea y aislada:
 
 | Decision | Alternativa descartada | Razon |
 |---|---|---|
-| Samba AD DC en Docker | Windows Server eval en VM | Menos RAM, arranca rapido, `samba-tool` es/scriptable y es identico en concepto a AD |
-| GLPI oficial + MariaDB | OTRS / Zammad | GLPI es estandar en administracion de sistemas y soporte en Espana |
+| Samba AD DC en Docker | Windows Server eval en VM | Menos RAM, arranca rápido, `samba-tool` es scriptable y es identico en concepto a AD |
+| GLPI oficial + MariaDB | OTRS / Zammad | GLPI es estandar en administración de sistemas y soporte en Espana |
 | Clonezilla Live + repo NFS | Fog / MDT | Clonezilla es ligero, gratuito y obliga a entender el proceso de imagen de verdad |
 | Tailscale subnet router | WireGuard + port forwarding | Sin puertos abiertos, NAT traversal, MagicDNS y ACLs centralizadas |
 | Docker Compose | Kubernetes | Para homelab, k8s anade complejidad sin valor de aprendizaje en esta fase |
-| Ansible para configuracion | Scripts sueltos | Idempotencia y lenguaje declarativo, que es lo que se usa en DevOps |
+| Ansible para configuración | Scripts sueltos | Idempotencia y lenguaje declarativo, que es lo que se usa en DevOps |
 
 !!! nota "Filosofia"
     Cada servicio se puede romper y reconstruir en minutos desde este repo. Eso es
-    exactamente lo que se espera de infraestructura como codigo.
+    exactamente lo que se espera de infraestructura como código.
 
 ## Mapa de red
 
@@ -70,8 +70,8 @@ IPs estaticas dentro de `homelab_net`:
 ## Requisitos estimados
 
 - CPU: 4 nucleos
-- RAM: 8 GB (12 GB recomendado si levantas Windows para las imagenes)
-- Disco: 80 GB libres (40 GB para imagenes)
+- RAM: 8 GB (12 GB recomendado si levantas Windows para las imágenes)
+- Disco: 80 GB libres (40 GB para imágenes)
 - SO anfitrion: Linux con Docker Engine 24+ y Compose v2
 - Cuenta Tailscale gratuita
 

@@ -1,8 +1,8 @@
-# 05 - Clonezilla: imagenes de equipo
+# 05 - Clonezilla: imágenes de equipo
 
 ## Que se monta
 
-Un **repositorio NFS** donde Clonezilla Live guarda y restaura imagenes de
+Un **repositorio NFS** donde Clonezilla Live guarda y restaura imágenes de
 maquinas del laboratorio. El arranque se hace con una ISO/USB de Clonezilla
 (por eso es una imagen «de verdad», no un contenedor simulado).
 
@@ -61,7 +61,7 @@ Arrancar el equipo a imaginar con el USB. En el menu de Clonezilla:
 
 ## 3. Capturar una imagen
 
-Desde Clonezilla (o desde el anfitrion con el helper):
+Flujo previsto con un disco real (**ejemplo, no ejecutado en este laboratorio**):
 
 ```bash
 ./infra/clonezilla/scripts/create-image.sh win10-base /dev/sda
@@ -75,7 +75,7 @@ Que hace el script:
 4. Guarda un `metadata.json` con fecha, disco, tamano y hash.
 5. Escribe `images/win10-base/info.txt` legible por humanos.
 
-Ejemplo de `metadata.json`:
+Ejemplo ilustrativo de `metadata.json` para ese disco real de 40 GB:
 
 ```json
 {
@@ -89,12 +89,13 @@ Ejemplo de `metadata.json`:
 }
 ```
 
-### Imagen real generada en el laboratorio
+### Prueba de concepto ejecutada (no una imagen de equipo)
 
-El repositorio contiene `labo-disk-01`, una imagen real `savedisk` de un disco
-loopback de 64 MiB con una partición ext4. Se capturó con `ocs-sr` (Clonezilla
-5.9.9) sobre el volumen NFS `homelab-images`, y el propio Clonezilla la marcó
-como restaurable tras verificarla al 100%.
+El repositorio contiene `labo-disk-01`, una **prueba de concepto**: un
+`savedisk` real de Clonezilla 5.9.9 (`ocs-sr`) sobre un **disco loopback de
+64 MiB** con una partición ext4. Clonezilla la marcó como restaurable y
+generó su checksum, pero **no representa un equipo de 40 GB ni un RTO medido**.
+La restauración en un equipo/VM real sigue pendiente.
 
 ```text
 [2026-11-21 20:11:45] [OK] Checksum guardado: 35a11f5d742c317e5c82a9e94318a01cda6cb398d5ca87ed6f133462fb750360
@@ -122,7 +123,7 @@ Vas a RESTAURAR 'win10-base' en /dev/sda
 Escribe YES para continuar:
 ```
 
-## 5. Listar y verificar imagenes
+## 5. Listar y verificar imágenes
 
 ```bash
 ./infra/clonezilla/scripts/list-images.sh
@@ -138,10 +139,10 @@ sha256sum -c infra/clonezilla/images/labo-disk-01/sha256sums.txt
 
 ## 6. Que demuestra
 
-- Entender **captura vs clonado**, `dd` vs imagenes con compression.
+- Entender **captura vs clonado**, `dd` vs imágenes con compression.
 - Saber trabajar con **NFS**, permisos y espacio compartido.
-- Saber **restaurar un equipo** con un objetivo de tiempo (RTO) medido.
-- Documentar un **catalogo de imagenes** con metadata y verificacion.
+- Saber **restaurar un equipo**: procedimiento documentado; medición de RTO pendiente.
+- Documentar un **catalogo de imágenes** con metadata y verificacion.
 
 ## Fallos tipicos
 

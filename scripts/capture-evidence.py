@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Genera evidencia real del homelab como capturas de terminal.
+"""Genera transcripciones de comandos ejecutados en el homelab.
 
-Uso: python3 scripts/capture-evidence.py
+Uso: HOMELAB_SSH_HOST=emi@192.168.0.19 python3 scripts/capture-evidence.py
 
-Las capturas web (GLPI y Grafana) se toman con Selenium dentro del homelab;
-este script genera las capturas de comandos y las de Tailscale desde emi-desk.
-No imprime ni guarda secretos.
+Los PNG son reconstrucciones tipográficas de salidas reales (subprocess.run),
+no capturas de pantalla. La fecha se toma del sistema que ejecuta el comando
+(`date -Iseconds` va dentro del propio comando). No imprime ni guarda secretos.
 """
+import os
 import re
 import subprocess
 from datetime import datetime
@@ -18,11 +19,12 @@ OUT = Path(__file__).resolve().parent.parent / "docs" / "screenshots"
 OUT.mkdir(parents=True, exist_ok=True)
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 FONT_B = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
-DATE = datetime.now().strftime("%Y-%m-%d %H:%M")
-SSH = "ssh -o BatchMode=yes emi@192.168.0.19"
+SSH_HOST = os.environ.get("HOMELAB_SSH_HOST", "emi@192.168.0.19")
+SSH = f"ssh -o BatchMode=yes {SSH_HOST}"
 
 font = ImageFont.truetype(FONT, 17)
 font_b = ImageFont.truetype(FONT_B, 19)
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}")
 
 
 def clean(text):
@@ -30,8 +32,10 @@ def clean(text):
     return "\n".join(line.rstrip() for line in text.splitlines())
 
 
-def render(name, command, output, service, demonstrates):
+def render(name, command, output, service, action, result="correcto"):
     lines = clean(output).splitlines()
+    match = ISO_DATE.search(output)
+    date = match.group(0) if match else datetime.now().astimezone().isoformat(timespec="seconds")
     width = 1500
     line_h = 23
     header = 92
@@ -39,7 +43,7 @@ def render(name, command, output, service, demonstrates):
     img = Image.new("RGB", (width, height), "#0f172a")
     d = ImageDraw.Draw(img)
     d.text((22, 14), "$ " + command, fill="#38bdf8", font=font_b)
-    d.text((22, 44), f"Fecha: {DATE}   |   Servicio: {service}", fill="#94a3b8", font=font)
+    d.text((22, 44), f"Fecha sistema: {date}   |   Servicio: {service}", fill="#94a3b8", font=font)
     y = header
     for line in lines:
         d.text((22, y), line[:155], fill="#e2e8f0", font=font)
@@ -47,60 +51,62 @@ def render(name, command, output, service, demonstrates):
     img.save(OUT / f"{name}.png")
     (OUT / f"{name}.md").write_text(
         f"# {name}.png\n\n"
-        f"- Fecha: {DATE}\n"
+        f"- Fecha: {date}\n"
         f"- Servicio: {service}\n"
         f"- Comando: `{command}`\n"
-        f"- Qué demuestra: {demonstrates}\n"
-        f"- Resultado: correcto\n"
+        f"- Qué hice: {action}\n"
+        f"- Resultado: {result}\n"
     )
-    print(f"OK {name}.png ({len(lines)} lineas)")
+    print(f"OK {name}.png ({len(lines)} lineas, {date})")
 
 
-def run(name, command, service, demonstrates):
+def run(name, command, service, action, result="correcto"):
     p = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=180)
-    render(name, command, (p.stdout + p.stderr).strip(), service, demonstrates)
+    render(name, command, (p.stdout + p.stderr).strip(), service, action, result)
 
 
-# 06: salida real de Clonezilla savedisk (checksum + verificacion al 100%)
+# 06: PoC de Clonezilla sobre disco loopback (checksum + verificacion)
 run(
     "06-clonezilla-savedisk",
-    f"{SSH} 'cd ~/homelab && python3 scripts/clonezilla-summary.py /tmp/clonezilla-seed.log'",
-    "Clonezilla (savedisk sobre volumen NFS)",
-    "la captura savedisk finalizada y verificada al 100%",
+    f"{SSH} 'date -Iseconds; cd ~/homelab && python3 scripts/clonezilla-summary.py /tmp/clonezilla-seed.log'",
+    "Clonezilla (PoC sobre volumen NFS)",
+    "generé un savedisk real de un disco loopback de 64 MiB y verifiqué su checksum",
+    "correcto como PoC; restauración en equipo real pendiente",
 )
 
 # 07: catalogo real del repositorio NFS
 run(
     "07-clonezilla-catalogo",
-    f"{SSH} 'cd ~/homelab && ./infra/clonezilla/scripts/list-images.sh'",
-    "Repositorio NFS de imagenes (homelab-images)",
-    "el catalogo de imagenes con su checksum verificado",
+    f"{SSH} 'date -Iseconds; cd ~/homelab && ./infra/clonezilla/scripts/list-images.sh'",
+    "Repositorio NFS de imágenes (homelab-images)",
+    "listé el catálogo con la imagen PoC `labo-disk-01` (1,2 MB)",
+    "correcto; no es una imagen de 40 GB",
 )
 
-# 08: nodo Tailscale (equivalente CLI a la consola de administracion)
+# 08: nodo Tailscale
 run(
     "08-tailscale-nodo",
-    f"{SSH} 'tailscale status'",
+    f"{SSH} 'date -Iseconds; tailscale status'",
     "Tailscale (homelab)",
-    "el nodo homelab conectado con IP 100.90.98.75 dentro del tailnet",
+    "comprobé el nodo `homelab` conectado en el tailnet",
 )
 
 # 09: rutas subnet aprobadas
 run(
     "09-tailscale-rutas",
-    f"{SSH} 'tailscale status --json | python3 -c \"import json,sys; "
+    f"{SSH} 'date -Iseconds; tailscale status --json | python3 -c \"import json,sys; "
     "s=json.load(sys.stdin)[\\\"Self\\\"]; print(\\\"Rutas aprobadas:\\\"); "
     "[print(\\\"  \\\"+r) for r in s.get(\\\"PrimaryRoutes\\\") or []]\"'",
     "Tailscale (subnet router)",
-    "las rutas 10.10.0.0/16 y 192.168.0.0/24 aprobadas en el nodo",
+    "verifiqué las rutas 10.10.0.0/16 y 192.168.0.0/24 aprobadas",
 )
 
-# 10: ping real desde otro nodo del tailnet (emi-desk)
+# 10: ping real desde otro nodo del tailnet
 run(
     "10-tailscale-ping",
-    "tailscale ping homelab",
+    "date -Iseconds; tailscale ping homelab",
     "Tailscale (emi-desk -> homelab)",
-    "conectividad directa desde otro nodo al subnet router",
+    "hice ping desde `emi-desk` hasta el subnet router",
 )
 
 print("FIN")

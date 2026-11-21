@@ -1,6 +1,6 @@
 # homelab
 
-Bienvenido a la documentacion del laboratorio.
+Bienvenido a la documentación del laboratorio.
 
 - [Indice completo](INDICE.md)
 - [Arquitectura](01-arquitectura.md)
@@ -12,7 +12,6 @@ Bienvenido a la documentacion del laboratorio.
 - [Seguridad](07-seguridad-devsecops.md)
 - [Operaciones](08-operaciones-y-backups.md)
 - [Troubleshooting](09-troubleshooting.md)
-- [Entrevista](10-entrevista.md)
 - [Capturas](screenshots/README.md)
 
 Repositorio: <https://github.com/Emiiwk/homelab>

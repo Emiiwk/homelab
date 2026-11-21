@@ -53,7 +53,7 @@ sudo sysctl net.ipv4.ip_forward
 
 Si `ip_forward = 0`, volver a aplicar `sysctl` (ver doc 02).
 
-## 5. MariaDB rechaza conexiones
+## 5. MariaDB rechaza conexiónes
 
 ```bash
 docker exec homelab-glpi-db mariadb-admin ping
@@ -89,7 +89,7 @@ docker exec homelab-images df -h /srv/clonezilla/images
 docker system df -v
 ```
 
-Limpiar imagenes antiguas con cuidado:
+Limpiar imágenes antiguas con cuidado:
 
 ```bash
 ./infra/clonezilla/scripts/list-images.sh
