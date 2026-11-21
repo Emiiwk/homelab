@@ -1,7 +1,7 @@
 # homelab
 
-[![Validación](https://img.shields.io/badge/validacion-local%20OK-brightgreen)](scripts/validate.sh)
-[![Documentación](https://img.shields.io/badge/docs-disponible-blue)](docs/INDICE.md)
+[![CI](https://github.com/Emiiwk/homelab/actions/workflows/validate.yml/badge.svg)](https://github.com/Emiiwk/homelab/actions/workflows/validate.yml)
+[![Docs](https://github.com/Emiiwk/homelab/actions/workflows/docs.yml/badge.svg)](https://github.com/Emiiwk/homelab/actions/workflows/docs.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Stack](https://img.shields.io/badge/stack-Docker%20%7C%20Samba%20AD%20%7C%20GLPI%20%7C%20Clonezilla%20%7C%20Tailscale-2f80ed)](docs/01-arquitectura.md)
 
