@@ -48,7 +48,7 @@ if [[ "$SEED_ONLY" != "--seed-only" ]]; then
       --domain="$NETBIOS" \
       --adminpass="$ADMIN_PASS" \
       --dns-backend=SAMBA_INTERNAL \
-      --function-level=2016 \
+      --function-level=2008_R2 \
       --use-rfc2307 \
       >/var/log/samba/provision.log 2>&1 \
       || die "Fallo al aprovisionar. Revisa /var/log/samba/provision.log"

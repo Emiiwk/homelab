@@ -62,7 +62,7 @@ samba-tool domain provision \
   --domain=HOMELAB \
   --adminpass="$AD_ADMIN_PASSWORD" \
   --dns-backend=SAMBA_INTERNAL \
-  --function-level=2016
+  --function-level=2008_R2
 ```
 
 Si ya existe `/var/lib/samba` con el dominio, se omite (idempotente).
