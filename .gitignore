@@ -13,6 +13,9 @@ secrets/
 # Datos persistentes generados en runtime
 infra/**/data/
 infra/**/db/
+# Los tickets de prueba SI son codigo fuente (no datos de runtime)
+!infra/glpi/data/
+!infra/glpi/data/tickets.csv
 infra/**/mariadb/
 infra/**/redis/
 infra/clonezilla/images/*

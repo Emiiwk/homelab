@@ -1,0 +1,13 @@
+id,titulo,categoria,prioridad,estado,tecnico,origen,sla_horas,descripcion,seguimiento
+T-001,PC no enciende tras la actualizacion,Hardware,2,Asignado,soporte1,Telefono,8,"El equipo de usuario1 no muestra POST tras aplicar parches. Se sospecha fuente o modulo de RAM.",Comprobada fuente con multimetro; se probara con modulo de RAM de repuesto.
+T-004,Usuario sin acceso al compartido soporte,Permisos,3,En curso,soporte2,Portal,24,"usuario2 recibe ACCESS_DENIED al montar \\dc01\soporte desde su equipo.",Resuelto el SID del grupo; se aplico setfacl y se reprobo el montaje.
+T-009,Sospecha de phishing en correo corporativo,Seguridad,1,Nuevo,soporte1,Correo,2,"Correo con enlace acortado recibido por usuario1. No se ha pulsado el enlace.",Se ha solicitado el correo original para analizar cabeceras y hashes.
+T-002,Impresora del pasillo sin respuesta,Red,3,Asignado,soporte2,Presencial,12,"La impresora no responde ping y el trabajo queda en cola.",Cable de red recolocado; pendiente de asignar IP estatica.
+T-003,GLPI lento al listar tickets,Software,4,En curso,soporte1,Portal,48,"La lista de tickets tarda mas de 10 segundos en cargar.",Redis caido detectado; se reinicio el servicio y se monitoriza.
+T-005,Usuario nuevo necesita cuenta de dominio,Solicitud,3,Resuelto,soporte1,Telefono,24,"Solicitud de alta para nuevo miembro del equipo de operaciones.",Cuenta creada en OU Operaciones y anadida al grupo Usuarios.
+T-006,Cambio de password expirada,Usuarios,4,Cerrado,soporte2,Telefono,8,"soporte2 informa de aviso de caducidad de password.",Password rotada y cuenta desbloqueada correctamente.
+T-007,No resuelve dc01.homelab.local,Red,2,Resuelto,soporte1,Presencial,4,"Equipos_clientes no resuelven el nombre del controlador.",Configurado nameserver 10.10.0.10 en el cliente DNS.
+T-008,Equipo con ruido excesivo del ventilador,Hardware,4,En curso,soporte2,Presencial,24,"El ventilador del equipo hace ruido desde el arranque.",Limpieza interna realizada; se sustituira el ventilador si persiste.
+T-010,Backup de GLPI no verificado,Backups,3,Pendiente,soporte1,Portal,72,"No hay registro de restic check en los ultimos 7 dias.",Programado restic check semanal y aviso por correo.
+T-011,Actualizacion de imagen Clonezilla,Solicitud,3,Cerrado,soporte2,Portal,48,"Se solicita nueva imagen base con parches de noviembre.",Imagen win10-base actualizada y verificada con sha256.
+T-012,Acceso VPN intermitente desde fuera,Red,2,En curso,soporte1,Telefono,6,"El nodo homelab aparece offline de forma intermitente en Tailscale.",Revisados logs; se sospecha cambio de IP del router. Pendiente de configurar IP estatica.

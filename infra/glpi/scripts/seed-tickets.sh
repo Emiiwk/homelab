@@ -5,7 +5,7 @@ set -Eeuo pipefail
 
 GLPI_URL="${GLPI_URL:-http://127.0.0.1:8080}"
 GLPI_API_TOKEN="${GLPI_API_TOKEN:?Configura GLPI_API_TOKEN en .env}"
-CSV="${1:-/home/emi/homelab/infra/glpi/data/tickets.csv}"
+CSV="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/data/tickets.csv}"
 
 log()  { printf '[%s] [%s] %s\n' "$(date '+%F %T')" "$1" "$2"; }
 ok()   { log OK "$1"; }
