@@ -1,0 +1,267 @@
+name: homelab
+
+networks:
+  homelab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${DOCKER_SUBNET:-10.10.0.0/16}
+
+volumes:
+  ad-data:
+  glpi-data:
+  glpi-db-data:
+  glpi-cache-data:
+  images-data:
+  prometheus-data:
+  grafana-data:
+  tailscale-data:
+
+services:
+  # ------------------------------------------------------------------
+  # Active Directory / DNS / Identity
+  # ------------------------------------------------------------------
+  ad:
+    build:
+      context: ./active-directory
+      dockerfile: Dockerfile
+    image: homelab/samba-ad:local
+    container_name: homelab-ad
+    hostname: dc01
+    domainname: ${DOMAIN:-homelab.local}
+    restart: unless-stopped
+    environment:
+      REALM: ${REALM:-HOMELAB.LOCAL}
+      DOMAIN: ${DOMAIN:-homelab.local}
+      NETBIOS_NAME: HOMELAB
+      AD_ADMIN_PASSWORD: ${AD_ADMIN_PASSWORD:?Configura AD_ADMIN_PASSWORD en .env}
+      AD_DNS_FORWARDER: ${AD_DNS_FORWARDER:-1.1.1.1}
+      SEED_AD_USERS: ${SEED_AD_USERS:-true}
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    volumes:
+      - ad-data:/var/lib/samba
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.10
+    ports:
+      - "127.0.0.1:389:389"
+      - "127.0.0.1:636:636"
+    healthcheck:
+      test: ["CMD-SHELL", "wbinfo -u >/dev/null 2>&1 && samba-tool domain info 127.0.0.1 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    logging: &default_logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ------------------------------------------------------------------
+  # GLPI - Helpdesk
+  # ------------------------------------------------------------------
+  glpi-db:
+    image: mariadb:10.11
+    container_name: homelab-glpi-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${GLPI_DB_ROOT_PASSWORD:?Configura GLPI_DB_ROOT_PASSWORD en .env}
+      MARIADB_DATABASE: ${GLPI_DB_NAME:-glpi}
+      MARIADB_USER: ${GLPI_DB_USER:-glpi}
+      MARIADB_PASSWORD: ${GLPI_DB_PASSWORD:?Configura GLPI_DB_PASSWORD en .env}
+      TZ: ${GLPI_TIMEZONE:-Europe/Madrid}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-buffer-pool-size=256M
+    volumes:
+      - glpi-db-data:/var/lib/mysql
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.21
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p\"$$MARIADB_ROOT_PASSWORD\" >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    logging: *default_logging
+
+  glpi-cache:
+    image: redis:7-alpine
+    container_name: homelab-glpi-cache
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - glpi-cache-data:/data
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.22
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    logging: *default_logging
+
+  glpi:
+    image: glpi/glpi:10.0.18
+    container_name: homelab-glpi
+    restart: unless-stopped
+    depends_on:
+      glpi-db:
+        condition: service_healthy
+      glpi-cache:
+        condition: service_healthy
+    environment:
+      GLPI_DB_HOST: glpi-db
+      GLPI_DB_NAME: ${GLPI_DB_NAME:-glpi}
+      GLPI_DB_USER: ${GLPI_DB_USER:-glpi}
+      GLPI_DB_PASSWORD: ${GLPI_DB_PASSWORD:?Configura GLPI_DB_PASSWORD en .env}
+      GLPI_REDIS_HOST: glpi-cache
+      GLPI_TIMEZONE: ${GLPI_TIMEZONE:-Europe/Madrid}
+      TZ: ${GLPI_TIMEZONE:-Europe/Madrid}
+    volumes:
+      - glpi-data:/var/www/glpi
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.20
+    dns:
+      - 10.10.0.10
+    ports:
+      - "127.0.0.1:8080:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/ >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging: *default_logging
+
+  # ------------------------------------------------------------------
+  # Clonezilla image repository (NFS)
+  # ------------------------------------------------------------------
+  images:
+    image: erichough/nfs-server:2.4.0
+    container_name: homelab-images
+    restart: unless-stopped
+    environment:
+      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash) ${LAN_SUBNET:-192.168.1.0/24}(rw,sync,no_subtree_check,no_root_squash)
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    volumes:
+      - images-data:/srv/clonezilla/images
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.30
+    ports:
+      - "127.0.0.1:2049:2049"
+      - "127.0.0.1:111:111/tcp"
+      - "127.0.0.1:111:111/udp"
+    logging: *default_logging
+
+  # ------------------------------------------------------------------
+  # Tailscale subnet router (nodo "homelab")
+  # ------------------------------------------------------------------
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: homelab-tailscale
+    restart: unless-stopped
+    network_mode: host
+    hostname: ${TS_HOSTNAME:-homelab}
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:?Configura TS_AUTHKEY en .env}
+      TS_HOSTNAME: ${TS_HOSTNAME:-homelab}
+      TS_ROUTES: ${TS_ROUTES:-10.10.0.0/16,192.168.1.0/24}
+      TS_EXTRA_ARGS: --accept-dns=true
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - tailscale-data:/var/lib/tailscale
+      - /dev:/dev
+    logging: *default_logging
+
+  # ------------------------------------------------------------------
+  # Observability
+  # ------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: homelab-prometheus
+    restart: unless-stopped
+    depends_on:
+      - ad
+      - glpi
+    volumes:
+      - ./monitoring/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.40
+    ports:
+      - "127.0.0.1:9090:9090"
+    logging: *default_logging
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: homelab-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Configura GRAFANA_ADMIN_PASSWORD en .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.41
+    ports:
+      - "127.0.0.1:3000:3000"
+    logging: *default_logging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    container_name: homelab-cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.42
+    ports:
+      - "127.0.0.1:8081:8080"
+    logging: *default_logging
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: homelab-node-exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.43
+    ports:
+      - "127.0.0.1:9100:9100"
+    logging: *default_logging

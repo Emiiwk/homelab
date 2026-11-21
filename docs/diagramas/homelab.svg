@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="box" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="640" fill="url(#bg)"/>
+  <text x="500" y="44" fill="#f8fafc" font-size="26" font-weight="700" text-anchor="middle">homelab · arquitectura general</text>
+  <text x="500" y="68" fill="#94a3b8" font-size="13" text-anchor="middle">homelab.local · red Docker 10.10.0.0/16 · nodo Tailscale "homelab"</text>
+
+  <!-- Internet / Tailscale -->
+  <rect x="370" y="90" width="260" height="60" rx="10" fill="url(#box)" stroke="#38bdf8"/>
+  <text x="500" y="116" fill="#fff" font-size="15" font-weight="600" text-anchor="middle">INTERNET / TAILNET</text>
+  <text x="500" y="136" fill="#bae6fd" font-size="12" text-anchor="middle">WireGuard · sin puertos abiertos</text>
+
+  <line x1="500" y1="150" x2="500" y2="190" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Docker network -->
+  <rect x="70" y="190" width="860" height="360" rx="16" fill="#0b1220" stroke="#334155" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="100" y="218" fill="#64748b" font-size="13" font-weight="600">DOCKER NETWORK · homelab_net · 10.10.0.0/16</text>
+
+  <!-- Row 1 -->
+  <g>
+    <rect x="110" y="240" width="230" height="80" rx="10" fill="#1d4ed8" stroke="#60a5fa"/>
+    <text x="225" y="268" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">dc01 · Samba AD</text>
+    <text x="225" y="288" fill="#dbeafe" font-size="12" text-anchor="middle">LDAP · Kerberos · DNS</text>
+    <text x="225" y="306" fill="#93c5fd" font-size="11" text-anchor="middle">10.10.0.10</text>
+
+    <rect x="385" y="240" width="230" height="80" rx="10" fill="#0f766e" stroke="#5eead4"/>
+    <text x="500" y="268" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">glpi</text>
+    <text x="500" y="288" fill="#ccfbf1" font-size="12" text-anchor="middle">Helpdesk · 12 tickets</text>
+    <text x="500" y="306" fill="#99f6e4" font-size="11" text-anchor="middle">10.10.0.20</text>
+
+    <rect x="660" y="240" width="230" height="80" rx="10" fill="#7c3aed" stroke="#c4b5fd"/>
+    <text x="775" y="268" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">images · NFS</text>
+    <text x="775" y="288" fill="#ede9fe" font-size="12" text-anchor="middle">Clonezilla repository</text>
+    <text x="775" y="306" fill="#ddd6fe" font-size="11" text-anchor="middle">10.10.0.30</text>
+  </g>
+
+  <line x1="340" y1="280" x2="385" y2="280" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="615" y1="280" x2="660" y2="280" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Row 2 -->
+  <g>
+    <rect x="240" y="370" width="220" height="72" rx="10" fill="#9a3412" stroke="#fb923c"/>
+    <text x="350" y="397" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">glpi-db · MariaDB</text>
+    <text x="350" y="418" fill="#ffedd5" font-size="11" text-anchor="middle">10.10.0.21 · sin puerto público</text>
+
+    <rect x="500" y="370" width="220" height="72" rx="10" fill="#be123c" stroke="#fb7185"/>
+    <text x="610" y="397" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">glpi-cache · Redis</text>
+    <text x="610" y="418" fill="#ffe4e6" font-size="11" text-anchor="middle">10.10.0.22 · interno</text>
+  </g>
+
+  <line x1="500" y1="320" x2="410" y2="370" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="520" y1="320" x2="600" y2="370" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Row 3 -->
+  <g>
+    <rect x="200" y="477" width="260" height="56" rx="10" fill="#166534" stroke="#4ade80"/>
+    <text x="330" y="503" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">prometheus · 10.10.0.40</text>
+    <text x="330" y="521" fill="#dcfce7" font-size="11" text-anchor="middle">métricas y healthchecks</text>
+
+    <rect x="500" y="477" width="260" height="56" rx="10" fill="#854d0e" stroke="#facc15"/>
+    <text x="630" y="503" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">grafana · 10.10.0.41</text>
+    <text x="630" y="521" fill="#fef9c3" font-size="11" text-anchor="middle">dashboards</text>
+  </g>
+
+  <line x1="330" y1="442" x2="330" y2="477" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="460" y1="505" x2="500" y2="505" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Footer -->
+  <text x="500" y="592" fill="#64748b" font-size="12" text-anchor="middle">Automatización: Make · Bash · Ansible · GitHub Actions · Secretos fuera del repo · Backups cifrados con restic</text>
+  <text x="500" y="614" fill="#475569" font-size="11" text-anchor="middle">Generado como parte del portfolio · docs/diagramas/homelab.svg</text>
+</svg>

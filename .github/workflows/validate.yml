@@ -1,0 +1,50 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Validar configuracion y secretos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+
+      - name: yamllint
+        run: |
+          python3 -m pip install --quiet yamllint
+          yamllint -d relaxed .github ansible infra
+
+      - name: Validar Docker Compose
+        run: |
+          docker compose --env-file .env.example -f infra/docker-compose.yml config --quiet
+          echo "Compose validado"
+
+      - name: Buscar secretos filtrados
+        run: |
+          set -e
+          if grep -rInE 'tskey-auth-[A-Za-z0-9]{10,}' \
+              --exclude='.env.example' --exclude-dir='.git' .; then
+            echo "ERROR: posible clave de Tailscale en el repositorio"
+            exit 1
+          fi
+          if grep -rInE '(PASSWORD|TOKEN)=[^C$"'"'"'][A-Za-z0-9!@#]{12,}' \
+              --exclude='.env.example' --exclude-dir='.git' .; then
+            echo "AVISO: revisa los valores anteriores"
+          fi
+          echo "Sin secretos detectados"
+
+      - name: Comprobar que .env esta ignorado
+        run: git check-ignore -v .env

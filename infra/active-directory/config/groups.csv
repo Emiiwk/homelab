@@ -1,0 +1,6 @@
+nombre,descripcion
+Domain Admins,Administradores del dominio (gestion total)
+TI-Admin,Personal de TI con permisos de gestion de equipos y tickets
+Soporte,Equipo de soporte con permisos de lectura y reset de password
+Usuarios,Usuarios estandar del laboratorio
+Invitados,Acceso limitado solo a portal de tickets

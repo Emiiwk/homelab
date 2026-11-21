@@ -1,0 +1,28 @@
+# Nodo Tailscale "homelab" actuando como subnet router.
+# Uso: docker compose --env-file ../../.env -f docker-compose.yml up -d
+name: homelab-tailscale
+
+volumes:
+  tailscale-data:
+    name: homelab_tailscale-data
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: homelab-tailscale
+    restart: unless-stopped
+    hostname: ${TS_HOSTNAME:-homelab}
+    network_mode: host
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:?Configura TS_AUTHKEY en .env}
+      TS_HOSTNAME: ${TS_HOSTNAME:-homelab}
+      TS_ROUTES: ${TS_ROUTES:-10.10.0.0/16,192.168.1.0/24}
+      TS_EXTRA_ARGS: --accept-dns=true
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+    cap_add: [NET_ADMIN, NET_RAW]
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - tailscale-data:/var/lib/tailscale
+      - /dev:/dev

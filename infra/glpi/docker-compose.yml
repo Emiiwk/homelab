@@ -1,0 +1,74 @@
+# Stack independiente de GLPI.
+# Uso: docker compose --env-file ../../.env -f docker-compose.yml up -d
+name: homelab-glpi
+
+networks:
+  homelab_net:
+    name: homelab_homelab_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/16
+
+volumes:
+  glpi-data:
+    name: homelab_glpi-data
+  glpi-db-data:
+    name: homelab_glpi-db-data
+  glpi-cache-data:
+    name: homelab_glpi-cache-data
+
+services:
+  glpi-db:
+    image: mariadb:10.11
+    container_name: homelab-glpi-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${GLPI_DB_ROOT_PASSWORD:?}
+      MARIADB_DATABASE: ${GLPI_DB_NAME:-glpi}
+      MARIADB_USER: ${GLPI_DB_USER:-glpi}
+      MARIADB_PASSWORD: ${GLPI_DB_PASSWORD:?}
+    volumes:
+      - glpi-db-data:/var/lib/mysql
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.21
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p\"$$MARIADB_ROOT_PASSWORD\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  glpi-cache:
+    image: redis:7-alpine
+    container_name: homelab-glpi-cache
+    restart: unless-stopped
+    volumes:
+      - glpi-cache-data:/data
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.22
+
+  glpi:
+    image: glpi/glpi:10.0.18
+    container_name: homelab-glpi
+    restart: unless-stopped
+    depends_on:
+      glpi-db:
+        condition: service_healthy
+    environment:
+      GLPI_DB_HOST: glpi-db
+      GLPI_DB_NAME: ${GLPI_DB_NAME:-glpi}
+      GLPI_DB_USER: ${GLPI_DB_USER:-glpi}
+      GLPI_DB_PASSWORD: ${GLPI_DB_PASSWORD:?}
+      GLPI_REDIS_HOST: glpi-cache
+      GLPI_TIMEZONE: ${GLPI_TIMEZONE:-Europe/Madrid}
+    volumes:
+      - glpi-data:/var/www/glpi
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.20
+    dns:
+      - 10.10.0.10
+    ports:
+      - "127.0.0.1:8080:80"

@@ -1,0 +1,45 @@
+---
+- name: Configurar Active Directory (Samba AD DC)
+  hosts: ad
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Asegurar ip_forward para Tailscale
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_file: /etc/sysctl.d/99-homelab.conf
+        reload: true
+      become: true
+
+    - name: Levantar contenedor del DC
+      ansible.builtin.command:
+        cmd: >-
+          docker compose --env-file {{ env_file }} -f {{ compose_file }}
+          up -d --build ad
+      changed_when: false
+
+    - name: Esperar a que winbind responda
+      ansible.builtin.command:
+        cmd: docker exec homelab-ad wbinfo -u
+      register: ad_users
+      retries: 20
+      delay: 10
+      until: ad_users.rc == 0
+      changed_when: false
+
+    - name: Mostrar usuarios del dominio
+      ansible.builtin.debug:
+        var: ad_users.stdout_lines
+
+    - name: Verificar integridad de la base de datos SAM
+      ansible.builtin.command:
+        cmd: docker exec homelab-ad samba-tool dbcheck --cross-ncs --fix --yes
+      changed_when: false
+
+    - name: Comprobar que la account de servicio de GLPI existe
+      ansible.builtin.command:
+        cmd: docker exec homelab-ad samba-tool user show svc_glpi
+      register: svc_glpi
+      changed_when: false
+      failed_when: svc_glpi.rc != 0

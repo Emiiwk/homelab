@@ -1,0 +1,9 @@
+usuario,nombre,apellido,password,grupo,ou
+administrador,Administrador,Dominio,USE_ENV,Domain Admins,
+soporte1,Soporte,Uno,[REDACTED],TI-Admin,TI
+soporte2,Soporte,Dos,[REDACTED],Soporte,TI
+usuario1,Usuario,Uno,[REDACTED],Usuarios,Operaciones
+usuario2,Usuario,Dos,[REDACTED],Usuarios,Operaciones
+invitado,Invitado,Lab,[REDACTED],Invitados,Invitados
+svc_glpi,Servicio,GLPI,[REDACTED],TI-Admin,Servidores
+svc_backup,Servicio,Backup,[REDACTED],Domain Admins,Servidores
