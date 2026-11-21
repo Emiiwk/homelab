@@ -31,6 +31,7 @@ fi
 if [[ "${SEED_AD_USERS:-true}" == "true" ]]; then
   log INFO "Cargando usuarios y grupos de prueba ..."
   /opt/ad/scripts/provision-ad.sh --seed-only || log WARN "No se pudieron cargar datos de prueba"
+  /opt/ad/scripts/create-users.sh || log WARN "No se pudieron crear usuarios de prueba"
 fi
 
 log INFO "Arrancando Samba en primer plano (${1:-samba}) ..."

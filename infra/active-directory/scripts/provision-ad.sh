@@ -26,7 +26,7 @@ group_exists() {
 
 create_ou() {
   local dn="$1" name="$2"
-  if samba-tool ou list 2>/dev/null | grep -qi "^${name}$"; then
+  if samba-tool ou list 2>/dev/null | grep -qiE "(^|,)OU=${name}(,|$)"; then
     warn "OU ya existe: $name"
   else
     samba-tool ou create "$dn" --description="OU $name creada por provision-ad.sh" >/dev/null \
