@@ -14,6 +14,7 @@ RUN apt-get update \
       samba-common-bin \
       samba-ad-provision \
       samba-dsdb-modules \
+      samba-vfs-modules \
       winbind \
       smbclient \
       krb5-user \
