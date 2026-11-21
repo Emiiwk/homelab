@@ -11,17 +11,17 @@ die() { log ERROR "$1"; exit 1; }
 
 command -v jq >/dev/null || die "Necesitas jq"
 
-SESSION="$(curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" \
+SESSION="$(curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
   "$GLPI_URL/apirest.php/initSession" | jq -r '.session_token')"
 
 cleanup() {
-  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "Session-Token: $SESSION" \
+  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" -H "Session-Token: $SESSION" \
     "$GLPI_URL/apirest.php/killSession" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 call() {
-  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" \
+  curl -fsS -H "Authorization: Bearer $GLPI_API_TOKEN" -H "App-Token: $GLPI_API_TOKEN" \
     -H "Session-Token: $SESSION" "$@"
 }
 
