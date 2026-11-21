@@ -12,6 +12,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       samba \
       samba-common-bin \
+      samba-ad-provision \
       smbclient \
       krb5-user \
       dnsutils \
