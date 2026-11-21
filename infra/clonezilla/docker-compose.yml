@@ -16,7 +16,7 @@ volumes:
 
 services:
   images:
-    image: erichough/nfs-server:2.4.0
+    image: erichough/nfs-server:2.2.1
     container_name: homelab-images
     restart: unless-stopped
     environment:
