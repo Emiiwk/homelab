@@ -30,7 +30,10 @@ gitleaks detect --source . -v
 
 **Estado real:** las contraseñas de los usuarios de laboratorio se rotaron el
 2026-11-21 y se entregan por variables `AD_PASS_*` en `.env`, fuera del repo.
-El acceso SSH al homelab es por clave.
+El acceso SSH al homelab es por clave. Las contraseñas antiguas que estaban en
+`config/users.csv` se sustituyeron por `[REDACTED]` en todo el historial con
+`git filter-repo` y se hizo `push --force` de `main`; por eso los hashes de
+commits anteriores ya no son válidos.
 
 ## 2. Hardening de contenedores (pendiente)
 
