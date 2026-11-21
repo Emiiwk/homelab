@@ -30,7 +30,7 @@ call() {
 
 case "${1:-list}" in
   list)
-    call "$GLPI_URL/apirest.php/Ticket?range=0-50&sort=date;DESC" \
+    call "$GLPI_URL/apirest.php/Ticket?range=0-50" \
       | jq -r '(if type == "array" then . else .data end)[] | "#\(.id) [\(.status)] \(.name)"'
     ;;
   stats)

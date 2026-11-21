@@ -103,8 +103,10 @@ while IFS=',' read -r id titulo categoria prioridad estado tecnico origen sla de
   new_id="$(echo "$response" | jq -r '.id // empty')"
 
   if [[ -n "$new_id" ]]; then
-    api_post "$GLPI_URL/apirest.php/Ticket/$new_id/TicketFollowup" \
-      "$(jq -n --arg c "$seguimiento" '{input:{content:$c, is_private:false}}')" >/dev/null || true
+    api_post "$GLPI_URL/apirest.php/TicketFollowup" \
+      "$(jq -n --argjson t "$new_id" --arg c "$seguimiento" \
+          '{input:{tickets_id:$t, content:$c, is_private:false}}')" >/dev/null \
+      || warn "No se pudo anadir seguimiento a #$new_id"
     ok "$id creado como ticket #$new_id ($titulo)"
     created=$((created + 1))
   else
