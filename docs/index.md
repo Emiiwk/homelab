@@ -15,4 +15,4 @@ Bienvenido a la documentacion del laboratorio.
 - [Entrevista](10-entrevista.md)
 - [Capturas](screenshots/README.md)
 
-Repositorio: <https://github.com/emiwk2006/homelab>
+Repositorio: <https://github.com/Emiiwk/homelab>
