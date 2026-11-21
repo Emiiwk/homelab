@@ -13,6 +13,7 @@ RUN apt-get update \
       samba \
       samba-common-bin \
       samba-ad-provision \
+      samba-dsdb-modules \
       smbclient \
       krb5-user \
       dnsutils \
