@@ -31,15 +31,15 @@ call() {
 case "${1:-list}" in
   list)
     call "$GLPI_URL/apirest.php/Ticket?range=0-50&sort=date;DESC" \
-      | jq -r '.data[] | "#\(.id) [\(.status)] \(.name)"'
+      | jq -r '(if type == "array" then . else .data end)[] | "#\(.id) [\(.status)] \(.name)"'
     ;;
   stats)
     call "$GLPI_URL/apirest.php/Ticket?range=0-1000" \
-      | jq -r '.data | group_by(.status) | map({status:.[0].status, total:length})'
+      | jq -r '(if type == "array" then . else .data end) | group_by(.status) | map({status:.[0].status, total:length})'
     ;;
   users)
     call "$GLPI_URL/apirest.php/User?range=0-100" \
-      | jq -r '.data[] | "\(.id)  \(.name)"'
+      | jq -r '(if type == "array" then . else .data end)[] | "\(.id)  \(.name)"'
     ;;
   create)
     title="${2:?Indica el titulo del ticket}"

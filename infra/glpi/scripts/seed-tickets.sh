@@ -45,7 +45,7 @@ api_post() {
 find_id() {
   local endpoint="$1" name="$2"
   api_get "$GLPI_URL/apirest.php/$endpoint?search-text=$(printf '%s' "$name" | jq -sRr @uri)&range=0-1" \
-    | jq -r '.data[0].id // empty'
+    | jq -r 'if type == "array" then .[0].id // empty else .data[0].id // empty end'
 }
 
 declare -A URGENCIA=( [1]=5 [2]=4 [3]=3 [4]=2 [5]=1 )
@@ -60,7 +60,7 @@ while IFS=',' read -r id titulo categoria prioridad estado tecnico origen sla de
 
   # Comprobar existencia por titulo (clave natural)
   found="$(api_get "$GLPI_URL/apirest.php/Ticket?search-text=$(printf '%s' "$titulo" | jq -sRr @uri)&range=0-1" \
-           | jq -r '.data[0].id // empty')"
+           | jq -r 'if type == "array" then .[0].id // empty else .data[0].id // empty end')"
   if [[ -n "$found" ]]; then
     warn "$id ya existe (ticket #$found)"
     existing=$((existing + 1))
