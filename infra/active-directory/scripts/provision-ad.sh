@@ -59,6 +59,9 @@ if [[ "$SEED_ONLY" != "--seed-only" ]]; then
       >/var/log/samba/provision.log 2>&1 \
       || die "Fallo al aprovisionar. Revisa /var/log/samba/provision.log"
     ok "Dominio $REALM aprovisionado"
+    # Persistir la configuracion generada: el contenedor se recrea con el
+    # smb.conf standalone de Debian en /etc, asi que hace falta restaurarla.
+    cp /etc/samba/smb.conf /var/lib/samba/smb.conf.dc
   fi
 fi
 
@@ -88,7 +91,7 @@ create_ou "OU=Grupos,OU=Homelab,$BASE_DN" "Grupos"
 # ------------------------------------------------------------------
 log INFO "Creando grupos ..."
 while IFS=',' read -r name description; do
-  [[ -z "$name" || "$name" == \#* ]] && continue
+  [[ -z "$name" || "$name" == name || "$name" == \#* ]] && continue
   if group_exists "$name"; then
     warn "Grupo ya existe: $name"
   else
@@ -107,6 +110,10 @@ apply_acl() {
   local group="$1" path="$2" perms="$3"
   local sid
   sid="$(wbinfo --name-to-sid "HOMELAB\\$group" 2>/dev/null | awk '{print $1}')" || true
+  # winbind todavia no esta arriba durante el seed: consultar el SID a LDB.
+  if [[ -z "$sid" ]]; then
+    sid="$(samba-tool group show "$group" 2>/dev/null | awk '/^objectSid:/ {print $2}')" || true
+  fi
   if [[ -z "$sid" ]]; then
     warn "No se pudo resolver SID de $group (winbind aun no arranco). Se aplicara en el siguiente arranque."
     return 0

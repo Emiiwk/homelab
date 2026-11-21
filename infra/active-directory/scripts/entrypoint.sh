@@ -21,6 +21,16 @@ else
   log INFO "Dominio $REALM ya aprovisionado. Omitiendo provision."
 fi
 
+# Restaurar la configuracion del DC persisted en el volumen (o la de referencia)
+if [[ -f /var/lib/samba/private/sam.ldb ]]; then
+  if [[ -f /var/lib/samba/smb.conf.dc ]]; then
+    cp /var/lib/samba/smb.conf.dc /etc/samba/smb.conf
+  else
+    cp /opt/ad/config/smb.conf /etc/samba/smb.conf
+  fi
+  log INFO "smb.conf del DC restaurado"
+fi
+
 # Ajustar reenvio DNS del servidor SAMBA_INTERNAL
 if [[ -n "${AD_DNS_FORWARDER:-}" ]]; then
   log INFO "Configurando reenvio DNS a $AD_DNS_FORWARDER"
