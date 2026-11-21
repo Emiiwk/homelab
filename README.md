@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Stack](https://img.shields.io/badge/stack-Docker%20%7C%20Samba%20AD%20%7C%20GLPI%20%7C%20Clonezilla%20%7C%20Tailscale-2f80ed)](docs/01-arquitectura.md)
 
-> Laboratorio doméstico de infraestructura real: identidad, soporte, imágenes de equipo, red privada y observabilidad. Documentado para convertir «no tengo experiencia» en «mira lo que sé hacer».
+> Laboratorio doméstico de infraestructura real: identidad, soporte, imágenes de equipo, red privada y observabilidad.
 
 **Nombre del nodo Tailscale:** `homelab`  
 **Dominio del laboratorio:** `homelab.local`  
@@ -15,7 +15,7 @@
 
 ## Que hay aqui
 
-Este repositorio no es un apunte de teoria. Es la **configuracion ejecutable** de un entorno que simula, a pequena escala, lo que hace un departamento de IT:
+Este repositorio es la **configuracion ejecutable** de un entorno que simula, a pequena escala, lo que hace un departamento de IT:
 
 | Capacidad | Tecnologia | Que demuestra |
 |---|---|---|
