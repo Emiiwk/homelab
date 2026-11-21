@@ -42,6 +42,12 @@ if [[ "$SEED_ONLY" != "--seed-only" ]]; then
     warn "El dominio ya existe. Omitiendo samba-tool domain provision."
   else
     log INFO "Ejecutando samba-tool domain provision ..."
+    # El smb.conf por defecto de Debian tiene server role = standalone server,
+    # incompatible con --server-role=dc. samba-tool genera uno correcto.
+    if [[ -f /etc/samba/smb.conf ]]; then
+      mv /etc/samba/smb.conf /etc/samba/smb.conf.original
+      warn "smb.conf de Debian apartado; samba-tool generara el del DC"
+    fi
     samba-tool domain provision \
       --server-role=dc \
       --realm="$REALM" \

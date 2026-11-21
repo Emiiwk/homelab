@@ -151,6 +151,7 @@ services:
     cap_add:
       - SYS_ADMIN
       - NET_ADMIN
+    privileged: true  # necesario para montar rpc_pipefs y arrancar nfsd
     volumes:
       - images-data:/srv/clonezilla/images
     networks:

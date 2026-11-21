@@ -22,6 +22,7 @@ services:
     environment:
       NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash) ${LAN_SUBNET:-192.168.1.0/24}(rw,sync,no_subtree_check,no_root_squash)
     cap_add: [SYS_ADMIN, NET_ADMIN]
+    privileged: true  # necesario para montar rpc_pipefs y arrancar nfsd
     volumes:
       - images-data:/srv/clonezilla/images
     networks:
