@@ -14,6 +14,7 @@ RUN apt-get update \
       samba-common-bin \
       samba-ad-provision \
       samba-dsdb-modules \
+      winbind \
       smbclient \
       krb5-user \
       dnsutils \
