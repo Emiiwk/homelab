@@ -1,0 +1,4 @@
+theme: jekyll-theme-slate
+title: homelab
+description: Laboratorio domestico de infraestructura - Active Directory, GLPI, Clonezilla y Tailscale
+markdown: kramdown

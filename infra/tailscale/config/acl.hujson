@@ -1,0 +1,75 @@
+// homelab - politica de ACLs para Tailscale
+// Pegar en https://login.tailscale.com/admin/acls/file
+// HuJSON permite comentarios y comas finales.
+{
+  "groups": {
+    "group:admins": [
+      "emiwk2006@gmail.com"
+    ],
+    "group:soporte": [
+      "soporte1@homelab.local",
+      "soporte2@homelab.local"
+    ],
+    "group:usuarios": [
+      "usuario1@homelab.local",
+      "usuario2@homelab.local"
+    ]
+  },
+
+  "tagOwners": {
+    "tag:homelab": ["group:admins"]
+  },
+
+  "acls": [
+    // Administradores: acceso total
+    {
+      "action": "accept",
+      "src": ["group:admins"],
+      "dst": ["*:*"]
+    },
+
+    // Soporte: LDAPS/LDAP, DNS, GLPI, NFS y Grafana en el nodo homelab
+    {
+      "action": "accept",
+      "src": ["group:soporte"],
+      "dst": ["tag:homelab:53,80,389,636,2049,3000,9090"]
+    },
+
+    // Usuarios: solo portal GLPI
+    {
+      "action": "accept",
+      "src": ["group:usuarios"],
+      "dst": ["tag:homelab:80"]
+    },
+
+    // El homelab solo puede salir a HTTPS (actualizaciones, descargas)
+    {
+      "action": "accept",
+      "src": ["tag:homelab"],
+      "dst": ["*:443"]
+    },
+
+    // Acceso a los puertos de administracion del router desde admins
+    {
+      "action": "accept",
+      "src": ["group:admins"],
+      "dst": ["tag:homelab:22,41641"]
+    }
+  ],
+
+  "ssh": [
+    {
+      "action": "check",
+      "src": ["group:admins"],
+      "dst": ["tag:homelab"],
+      "users": ["autogroup:nonroot", "root"]
+    }
+  ],
+
+  "nodeAttrs": [
+    {
+      "target": ["tag:homelab"],
+      "attr": ["funnel"]
+    }
+  ]
+}

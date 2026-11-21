@@ -1,0 +1,33 @@
+# Repositorio NFS de imagenes Clonezilla.
+# Uso: docker compose --env-file ../../.env -f docker-compose.yml up -d
+name: homelab-clonezilla
+
+networks:
+  homelab_net:
+    name: homelab_homelab_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/16
+
+volumes:
+  images-data:
+    name: homelab_images-data
+
+services:
+  images:
+    image: erichough/nfs-server:2.4.0
+    container_name: homelab-images
+    restart: unless-stopped
+    environment:
+      NFS_EXPORT_0: /srv/clonezilla/images ${DOCKER_SUBNET:-10.10.0.0/16}(rw,sync,no_subtree_check,no_root_squash) ${LAN_SUBNET:-192.168.1.0/24}(rw,sync,no_subtree_check,no_root_squash)
+    cap_add: [SYS_ADMIN, NET_ADMIN]
+    volumes:
+      - images-data:/srv/clonezilla/images
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.30
+    ports:
+      - "127.0.0.1:2049:2049"
+      - "127.0.0.1:111:111/tcp"
+      - "127.0.0.1:111:111/udp"

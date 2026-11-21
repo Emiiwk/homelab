@@ -1,0 +1,40 @@
+# Secretos y configuracion local
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+tailscale/authkey
+secrets/
+
+# Datos persistentes generados en runtime
+infra/**/data/
+infra/**/db/
+infra/**/mariadb/
+infra/**/redis/
+infra/clonezilla/images/*
+!infra/clonezilla/images/.gitkeep
+backups/
+*.img
+*.gz
+*.zst
+
+# Artefactos de Python / Ansible
+__pycache__/
+*.py[cod]
+*.retry
+.ansible/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Logs
+*.log

@@ -1,0 +1,48 @@
+# Stack independiente del controlador de dominio.
+# Uso: docker compose --env-file ../../.env -f docker-compose.yml up -d
+name: homelab-ad
+
+networks:
+  homelab_net:
+    name: homelab_homelab_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/16
+
+volumes:
+  ad-data:
+    name: homelab_ad-data
+
+services:
+  ad:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: homelab/samba-ad:local
+    container_name: homelab-ad
+    hostname: dc01
+    domainname: ${DOMAIN:-homelab.local}
+    restart: unless-stopped
+    environment:
+      REALM: ${REALM:-HOMELAB.LOCAL}
+      DOMAIN: ${DOMAIN:-homelab.local}
+      NETBIOS_NAME: HOMELAB
+      AD_ADMIN_PASSWORD: ${AD_ADMIN_PASSWORD:?}
+      AD_DNS_FORWARDER: ${AD_DNS_FORWARDER:-1.1.1.1}
+      SEED_AD_USERS: ${SEED_AD_USERS:-true}
+    cap_add: [NET_ADMIN, NET_RAW, SYS_ADMIN]
+    volumes:
+      - ad-data:/var/lib/samba
+    networks:
+      homelab_net:
+        ipv4_address: 10.10.0.10
+    ports:
+      - "127.0.0.1:389:389"
+      - "127.0.0.1:636:636"
+    healthcheck:
+      test: ["CMD-SHELL", "wbinfo -u >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s

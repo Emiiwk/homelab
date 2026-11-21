@@ -1,0 +1,23 @@
+---
+- name: Preparar homelab
+  hosts: homelab
+  gather_facts: true
+  tasks:
+    - name: Verificar que existe .env
+      ansible.builtin.stat:
+        path: "{{ env_file }}"
+      register: env_stat
+      failed_when: not env_stat.stat.exists
+
+    - name: Crear directorios de trabajo
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ repo_root }}/backups"
+        - "{{ repo_root }}/docs/screenshots"
+        - "{{ repo_root }}/infra/clonezilla/images"
+
+- import_playbook: ad.yml
+- import_playbook: glpi.yml

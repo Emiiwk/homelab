@@ -1,0 +1,33 @@
+---
+- name: Configurar GLPI y cargar tickets
+  hosts: glpi
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Levantar stack de GLPI
+      ansible.builtin.command:
+        cmd: >-
+          docker compose --env-file {{ env_file }} -f {{ compose_file }}
+          up -d glpi-db glpi-cache glpi
+      changed_when: false
+
+    - name: Esperar a que GLPI responda
+      ansible.builtin.uri:
+        url: http://127.0.0.1:8080
+        status_code: 200
+      register: glpi_http
+      retries: 20
+      delay: 10
+      until: glpi_http.status == 200
+
+    - name: Cargar tickets de prueba (idempotente)
+      ansible.builtin.command:
+        cmd: "{{ repo_root }}/infra/glpi/scripts/seed-tickets.sh"
+      environment:
+        GLPI_URL: http://127.0.0.1:8080
+      register: seed_result
+      changed_when: "'creados=' in seed_result.stdout and 'creados=0' not in seed_result.stdout"
+
+    - name: Mostrar resumen de la carga
+      ansible.builtin.debug:
+        var: seed_result.stdout_lines

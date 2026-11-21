@@ -1,0 +1,19 @@
+---
+# Variables no sensibles del homelab.
+domain: homelab.local
+realm: HOMELAB.LOCAL
+netbios_name: HOMELAB
+docker_subnet: 10.10.0.0/16
+lan_subnet: 192.168.1.0/24
+tailscale_hostname: homelab
+
+ad_users_file: ../infra/active-directory/config/users.csv
+ad_groups_file: ../infra/active-directory/config/groups.csv
+glpi_tickets_file: ../infra/glpi/data/tickets.csv
+
+repo_root: "{{ playbook_dir }}/.."
+compose_file: "{{ repo_root }}/infra/docker-compose.yml"
+env_file: "{{ repo_root }}/.env"
+
+# Las variables sensibles van en vault.yml cifrado:
+#   ansible-vault create group_vars/vault.yml
